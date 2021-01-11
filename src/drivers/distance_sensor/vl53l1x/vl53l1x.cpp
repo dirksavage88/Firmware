@@ -35,8 +35,11 @@
 ***********/
 
 #include "vl53l1x.hpp"
+#include <px4_platform_common/px4_config.h>
+#include <uORB/uORB.h>
+#include <uORB/topics/distance_sensor.h>
 
-#define VL53L1X_SAMPLE_RATE                                20  // ms
+#define VL53L1X_SAMPLE_RATE                                20  // ms, f = 50hz
 
 /* ST */
 const uint8_t VL51L1X_DEFAULT_CONFIGURATION[] = {
@@ -161,7 +164,7 @@ VL53L1X::~VL53L1X()
 	perf_free(_comms_errors);
 }
 
-int VL53L1X::collect()
+int VL53L1X::collect(struct distance_sensor_s *rngval)
 {
 	uint8_t ret = 0;
 	uint8_t rangeStatus;
@@ -188,8 +191,13 @@ int VL53L1X::collect()
 		return PX4_ERROR;
 	}
 
+	rngval->current_distance = distance_mm;
+        orb_advert_t pub_rngval = orb_advertise(ORB_ID(distance_sensor), rngval);
+	if (pub_rngval == NULL){
+                return PX4_ERROR;   
+	}
 	perf_end(_sample_perf);
-
+        
 	float distance_m = distance_mm / 1000.f;
 
 	_px4_rangefinder.update(timestamp_sample, distance_m);
@@ -219,11 +227,13 @@ int VL53L1X::probe()
 void VL53L1X::RunImpl()
 {
 	uint8_t dataReady = 0;
+        struct distance_sensor_s range_value;
 
 	VL53L1X_CheckForDataReady(&dataReady);
 
 	if (dataReady == 1) {
-		collect();
+		//collect();
+                collect(&range_value);
 	}
 
 	ScheduleDelayed(VL53L1X_SAMPLE_RATE);
@@ -231,8 +241,13 @@ void VL53L1X::RunImpl()
 
 void VL53L1X::start()
 {
+	
 	// Schedule the first cycle.
 	ScheduleNow();
+
+	/*debugging to see if init & collect are even called*/
+	//ret = init()
+	//ret = collect()
 }
 
 int VL53L1X::init()
@@ -702,6 +717,8 @@ extern "C" __EXPORT int vl53l1x_main(int argc, char *argv[])
 
 	if (!strcmp(verb, "start")) {
 		return ThisDriver::module_start(cli, iterator);
+		//ret = init()
+
 	}
 
 	if (!strcmp(verb, "stop")) {
