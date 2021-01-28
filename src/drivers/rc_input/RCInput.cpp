@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2012-2018 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2012-2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,12 +34,14 @@
 #include "RCInput.hpp"
 
 #include "crsf_telemetry.h"
+#include <uORB/topics/vehicle_command_ack.h>
 
 using namespace time_literals;
 
 constexpr char const *RCInput::RC_SCAN_STRING[];
 
 RCInput::RCInput(const char *device) :
+	ModuleParams(nullptr),
 	ScheduledWorkItem(MODULE_NAME, px4::serial_port_to_wq(device)),
 	_cycle_perf(perf_alloc(PC_ELAPSED, MODULE_NAME": cycle time")),
 	_publish_interval_perf(perf_alloc(PC_INTERVAL, MODULE_NAME": publish interval"))
@@ -63,6 +65,10 @@ RCInput::RCInput(const char *device) :
 
 RCInput::~RCInput()
 {
+#if defined(SPEKTRUM_POWER_PASSIVE)
+	// Disable power controls for Spektrum receiver
+	SPEKTRUM_POWER_PASSIVE();
+#endif
 	dsm_deinit();
 
 	delete _crsf_telemetry;
@@ -80,6 +86,7 @@ RCInput::init()
 #endif // RF_RADIO_POWER_CONTROL
 
 	// dsm_init sets some file static variables and returns a file descriptor
+	// it also powers on the radio if needed
 	_rcs_fd = dsm_init(_device);
 
 	if (_rcs_fd < 0) {
@@ -191,9 +198,17 @@ RCInput::fill_rc_in(uint16_t raw_rc_count_local,
 
 	/* fake rssi if no value was provided */
 	if (rssi == -1) {
+		if ((_param_rc_rssi_pwm_chan.get() > 0) && (_param_rc_rssi_pwm_chan.get() < _rc_in.channel_count)) {
+			const int32_t rssi_pwm_chan = _param_rc_rssi_pwm_chan.get();
+			const int32_t rssi_pwm_min = _param_rc_rssi_pwm_min.get();
+			const int32_t rssi_pwm_max = _param_rc_rssi_pwm_max.get();
 
-		/* set RSSI if analog RSSI input is present */
-		if (_analog_rc_rssi_stable) {
+			// get RSSI from input channel
+			int rc_rssi = ((_rc_in.values[rssi_pwm_chan - 1] - rssi_pwm_min) * 100) / (rssi_pwm_max - rssi_pwm_min);
+			_rc_in.rssi = math::constrain(rc_rssi, 0, 100);
+
+		} else if (_analog_rc_rssi_stable) {
+			// set RSSI if analog RSSI input is present
 			float rssi_analog = ((_analog_rc_rssi_volt - 0.2f) / 3.0f) * 100.0f;
 
 			if (rssi_analog > 100.0f) {
@@ -242,6 +257,19 @@ void RCInput::rc_io_invert(bool invert)
 	}
 }
 
+void RCInput::answer_command(const vehicle_command_s &cmd, uint8_t result)
+{
+	/* publish ACK */
+	uORB::Publication<vehicle_command_ack_s> vehicle_command_ack_pub{ORB_ID(vehicle_command_ack)};
+	vehicle_command_ack_s command_ack{};
+	command_ack.command = cmd.command;
+	command_ack.result = result;
+	command_ack.target_system = cmd.source_system;
+	command_ack.target_component = cmd.source_component;
+	command_ack.timestamp = hrt_absolute_time();
+	vehicle_command_ack_pub.publish(command_ack);
+}
+
 void RCInput::Run()
 {
 	if (should_exit()) {
@@ -262,15 +290,28 @@ void RCInput::Run()
 
 		perf_begin(_cycle_perf);
 
+		// Check if parameters have changed
+		if (_parameter_update_sub.updated()) {
+			// clear update
+			parameter_update_s param_update;
+			_parameter_update_sub.copy(&param_update);
+
+			updateParams();
+		}
+
 		const hrt_abstime cycle_timestamp = hrt_absolute_time();
 
-#if defined(SPEKTRUM_POWER)
+
 		/* vehicle command */
 		vehicle_command_s vcmd;
 
 		if (_vehicle_cmd_sub.update(&vcmd)) {
 			// Check for a pairing command
 			if ((unsigned int)vcmd.command == vehicle_command_s::VEHICLE_CMD_START_RX_PAIR) {
+
+				uint8_t cmd_ret = vehicle_command_s::VEHICLE_CMD_RESULT_UNSUPPORTED;
+#if defined(SPEKTRUM_POWER)
+
 				if (!_rc_scan_locked /* !_armed.armed */) { // TODO: add armed check?
 					if ((int)vcmd.param1 == 0) {
 						// DSM binding command
@@ -289,15 +330,15 @@ void RCInput::Run()
 						}
 
 						bind_spektrum(dsm_bind_pulses);
-					}
 
-				} else {
-					PX4_WARN("system armed, bind request rejected");
+						cmd_ret = vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED;
+					}
 				}
-			}
-		}
 
 #endif /* SPEKTRUM_POWER */
+				answer_command(vcmd, cmd_ret);
+			}
+		}
 
 		/* update ADC sampling */
 #ifdef ADC_RC_RSSI_CHANNEL
@@ -338,7 +379,7 @@ void RCInput::Run()
 
 		if (_report_lock && _rc_scan_locked) {
 			_report_lock = false;
-			//PX4_WARN("RCscan: %s RC input locked", RC_SCAN_STRING[_rc_scan_state]);
+			PX4_INFO("RC scan: %s RC input locked", RC_SCAN_STRING[_rc_scan_state]);
 		}
 
 		int newBytes = 0;
@@ -350,6 +391,10 @@ void RCInput::Run()
 
 		// read all available data from the serial RC input UART
 		newBytes = ::read(_rcs_fd, &_rcs_buf[0], SBUS_BUFFER_SIZE);
+
+		if (newBytes > 0) {
+			_bytes_rx += newBytes;
+		}
 
 		switch (_rc_scan_state) {
 		case RC_SCAN_SBUS:
@@ -672,17 +717,45 @@ int RCInput::custom_command(int argc, char *argv[])
 
 int RCInput::print_status()
 {
-	PX4_INFO("Running");
-
 	PX4_INFO("Max update rate: %i Hz", 1000000 / _current_update_interval);
 
 	if (_device[0] != '\0') {
-		PX4_INFO("Serial device: %s", _device);
+		PX4_INFO("UART device: %s", _device);
+		PX4_INFO("UART RX bytes: %u", _bytes_rx);
 	}
 
-	PX4_INFO("RC scan state: %s, locked: %s", RC_SCAN_STRING[_rc_scan_state], _rc_scan_locked ? "yes" : "no");
-	PX4_INFO("CRSF Telemetry: %s", _crsf_telemetry ? "yes" : "no");
-	PX4_INFO("SBUS frame drops: %u", sbus_dropped_frames());
+	PX4_INFO("RC state: %s: %s", _rc_scan_locked ? "found" : "searching for signal", RC_SCAN_STRING[_rc_scan_state]);
+
+	if (_rc_scan_locked) {
+		switch (_rc_scan_state) {
+		case RC_SCAN_CRSF:
+			PX4_INFO("CRSF Telemetry: %s", _crsf_telemetry ? "yes" : "no");
+			break;
+
+		case RC_SCAN_SBUS:
+			PX4_INFO("SBUS frame drops: %u", sbus_dropped_frames());
+			break;
+
+
+		case RC_SCAN_DSM:
+			// DSM status output
+#if defined(SPEKTRUM_POWER)
+#endif
+			break;
+
+		case RC_SCAN_PPM:
+			// PPM status output
+			break;
+
+		case RC_SCAN_SUMD:
+			// SUMD status output
+			break;
+
+		case RC_SCAN_ST24:
+			// SUMD status output
+			break;
+		}
+	}
 
 #if ADC_RC_RSSI_CHANNEL
 	PX4_INFO("vrssi: %dmV", (int)(_analog_rc_rssi_volt * 1000.0f));

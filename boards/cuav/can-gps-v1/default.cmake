@@ -17,6 +17,7 @@ add_definitions(
 	-DHW_VERSION_MAJOR=${uavcanblid_hw_version_major}
 	-DHW_VERSION_MINOR=${uavcanblid_hw_version_minor}
 )
+add_definitions(-DUSE_S_RGB_LED_DMA)
 
 px4_add_board(
 	PLATFORM nuttx
@@ -27,56 +28,26 @@ px4_add_board(
 	ARCHITECTURE cortex-m4
 	ROMFSROOT cannode
 	UAVCAN_INTERFACES 1
-	SERIAL_PORTS
-		GPS1:/dev/ttyS1
 	DRIVERS
-		#adc
 		barometer/ms5611
 		bootloaders
 		gps
+		lights/neopixel
 		magnetometer/rm3100
-		#safety_button
-		#tone_alarm
+		safety_button
+		tone_alarm
 		uavcannode
 	MODULES
-		#ekf2
-		#load_mon
-		#sensors
-		#temperature_compensation
+		load_mon
 	SYSTEMCMDS
-		#bl_update
-		#dmesg
-		#dumpfile
-		#esc_calib
-		#hardfault_log
-		#i2cdetect
-		#led_control
-		#mft
-		#mixer
-		#motor_ramp
-		#motor_test
-		#mtd
-		#nshterm
+		i2cdetect
+		led_control
 		param
 		perf
 		reboot
-		#reflect
-		#sd_bench
-		#shutdown
 		top
 		topic_listener
-		#tune_control
+		tune_control
 		ver
 		work_queue
-)
-
-include(px4_make_uavcan_bootloader)
-px4_make_uavcan_bootloadable(
-	BOARD ${PX4_BOARD}
-	BIN ${PX4_BINARY_DIR}/${PX4_BOARD}.bin
-	HWNAME ${uavcanblid_name}
-	HW_MAJOR ${uavcanblid_hw_version_major}
-	HW_MINOR ${uavcanblid_hw_version_minor}
-	SW_MAJOR ${uavcanblid_sw_version_major}
-	SW_MINOR ${uavcanblid_sw_version_minor}
 )

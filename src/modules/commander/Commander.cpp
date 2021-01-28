@@ -549,14 +549,12 @@ Commander::handle_command(const vehicle_command_s &cmd)
 
 						switch (custom_sub_mode) {
 						case PX4_CUSTOM_SUB_MODE_AUTO_LOITER:
-							main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_LOITER, _status_flags,
-											 &_internal_state);
+							main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_LOITER, _status_flags, &_internal_state);
 							break;
 
 						case PX4_CUSTOM_SUB_MODE_AUTO_MISSION:
 							if (_status_flags.condition_auto_mission_available) {
-								main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_MISSION, _status_flags,
-												 &_internal_state);
+								main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_MISSION, _status_flags, &_internal_state);
 
 							} else {
 								main_ret = TRANSITION_DENIED;
@@ -565,18 +563,15 @@ Commander::handle_command(const vehicle_command_s &cmd)
 							break;
 
 						case PX4_CUSTOM_SUB_MODE_AUTO_RTL:
-							main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_RTL, _status_flags,
-											 &_internal_state);
+							main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_RTL, _status_flags, &_internal_state);
 							break;
 
 						case PX4_CUSTOM_SUB_MODE_AUTO_TAKEOFF:
-							main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_TAKEOFF, _status_flags,
-											 &_internal_state);
+							main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_TAKEOFF, _status_flags, &_internal_state);
 							break;
 
 						case PX4_CUSTOM_SUB_MODE_AUTO_LAND:
-							main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_LAND, _status_flags,
-											 &_internal_state);
+							main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_LAND, _status_flags, &_internal_state);
 							break;
 
 						case PX4_CUSTOM_SUB_MODE_AUTO_FOLLOW_TARGET:
@@ -585,8 +580,7 @@ Commander::handle_command(const vehicle_command_s &cmd)
 							break;
 
 						case PX4_CUSTOM_SUB_MODE_AUTO_PRECLAND:
-							main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_PRECLAND, _status_flags,
-											 &_internal_state);
+							main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_PRECLAND, _status_flags, &_internal_state);
 							break;
 
 						default:
@@ -596,8 +590,7 @@ Commander::handle_command(const vehicle_command_s &cmd)
 						}
 
 					} else {
-						main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_MISSION, _status_flags,
-										 &_internal_state);
+						main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_MISSION, _status_flags, &_internal_state);
 					}
 
 				} else if (custom_main_mode == PX4_CUSTOM_MAIN_MODE_ACRO) {
@@ -606,8 +599,7 @@ Commander::handle_command(const vehicle_command_s &cmd)
 
 				} else if (custom_main_mode == PX4_CUSTOM_MAIN_MODE_RATTITUDE) {
 					/* RATTITUDE */
-					main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_RATTITUDE, _status_flags,
-									 &_internal_state);
+					main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_RATTITUDE, _status_flags, &_internal_state);
 
 				} else if (custom_main_mode == PX4_CUSTOM_MAIN_MODE_STABILIZED) {
 					/* STABILIZED */
@@ -617,16 +609,14 @@ Commander::handle_command(const vehicle_command_s &cmd)
 					reset_posvel_validity();
 
 					/* OFFBOARD */
-					main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_OFFBOARD, _status_flags,
-									 &_internal_state);
+					main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_OFFBOARD, _status_flags, &_internal_state);
 				}
 
 			} else {
 				/* use base mode */
 				if (base_mode & VEHICLE_MODE_FLAG_AUTO_ENABLED) {
 					/* AUTO */
-					main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_MISSION, _status_flags,
-									 &_internal_state);
+					main_ret = main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_MISSION, _status_flags, &_internal_state);
 
 				} else if (base_mode & VEHICLE_MODE_FLAG_MANUAL_INPUT_ENABLED) {
 					if (base_mode & VEHICLE_MODE_FLAG_GUIDED_ENABLED) {
@@ -888,8 +878,7 @@ Commander::handle_command(const vehicle_command_s &cmd)
 
 	case vehicle_command_s::VEHICLE_CMD_NAV_TAKEOFF: {
 			/* ok, home set, use it to take off */
-			if (TRANSITION_CHANGED == main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_TAKEOFF,
-					_status_flags,
+			if (TRANSITION_CHANGED == main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_TAKEOFF, _status_flags,
 					&_internal_state)) {
 				cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED;
 
@@ -904,7 +893,7 @@ Commander::handle_command(const vehicle_command_s &cmd)
 		break;
 
 	case vehicle_command_s::VEHICLE_CMD_NAV_LAND: {
-			if (TRANSITION_CHANGED == main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_LAND, _status_flags,
+			if (TRANSITION_DENIED != main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_LAND, _status_flags,
 					&_internal_state)) {
 				mavlink_log_info(&_mavlink_log_pub, "Landing at current position");
 				cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED;
@@ -917,8 +906,8 @@ Commander::handle_command(const vehicle_command_s &cmd)
 		break;
 
 	case vehicle_command_s::VEHICLE_CMD_NAV_PRECLAND: {
-			if (TRANSITION_CHANGED == main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_PRECLAND,
-					_status_flags, &_internal_state)) {
+			if (TRANSITION_DENIED != main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_PRECLAND, _status_flags,
+					&_internal_state)) {
 				mavlink_log_info(&_mavlink_log_pub, "Precision landing");
 				cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED;
 
@@ -940,8 +929,7 @@ Commander::handle_command(const vehicle_command_s &cmd)
 				if (PX4_ISFINITE(cmd.param1) && (cmd.param1 >= -1) && (cmd.param1 < _mission_result_sub.get().seq_total)) {
 
 					// switch to AUTO_MISSION and ARM
-					if ((TRANSITION_DENIED != main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_MISSION,
-							_status_flags,
+					if ((TRANSITION_DENIED != main_state_transition(_status, commander_state_s::MAIN_STATE_AUTO_MISSION, _status_flags,
 							&_internal_state))
 					    && (TRANSITION_DENIED != arm_disarm(true, true, arm_disarm_reason_t::MISSION_START))) {
 
@@ -1209,10 +1197,6 @@ Commander::handle_command(const vehicle_command_s &cmd)
 		}
 
 	case vehicle_command_s::VEHICLE_CMD_START_RX_PAIR:
-		/* just ack, implementation handled in the IO driver */
-		answer_command(cmd, vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED);
-		break;
-
 	case vehicle_command_s::VEHICLE_CMD_CUSTOM_0:
 	case vehicle_command_s::VEHICLE_CMD_CUSTOM_1:
 	case vehicle_command_s::VEHICLE_CMD_CUSTOM_2:
@@ -2431,7 +2415,7 @@ Commander::run()
 		}
 
 		/* handle commands last, as the system needs to be updated to handle them */
-		if (_cmd_sub.updated()) {
+		while (_cmd_sub.updated()) {
 			/* got command */
 			const unsigned last_generation = _cmd_sub.get_last_generation();
 			vehicle_command_s cmd;
@@ -2632,7 +2616,12 @@ Commander::run()
 			// Evaluate current prearm status
 			if (!_armed.armed && !_status_flags.condition_calibration_enabled) {
 				bool preflight_check_res = PreFlightCheck::preflightCheck(nullptr, _status, _status_flags, true, false, true, 30_s);
-				bool prearm_check_res = PreFlightCheck::preArmCheck(nullptr, _status_flags, _safety, _arm_requirements, _status, false);
+
+				// skip arm authorization check until actual arming attempt
+				PreFlightCheck::arm_requirements_t arm_req = _arm_requirements;
+				arm_req.arm_authorization = false;
+				bool prearm_check_res = PreFlightCheck::preArmCheck(nullptr, _status_flags, _safety, arm_req, _status, false);
+
 				set_health_flags(subsystem_info_s::SUBSYSTEM_TYPE_PREARM_CHECK, true, true, (preflight_check_res
 						 && prearm_check_res), _status);
 			}
@@ -2764,18 +2753,16 @@ Commander::get_circuit_breaker_params()
 void
 Commander::control_status_leds(bool changed, const uint8_t battery_warning)
 {
-	static hrt_abstime overload_start = 0;
-
 	bool overload = (_cpuload.load > 0.95f) || (_cpuload.ram_usage > 0.98f);
 
-	if (overload_start == 0 && overload) {
-		overload_start = hrt_absolute_time();
+	if (_overload_start == 0 && overload) {
+		_overload_start = hrt_absolute_time();
 
 	} else if (!overload) {
-		overload_start = 0;
+		_overload_start = 0;
 	}
 
-	/* driving rgbled */
+	// driving the RGB led
 	if (changed || _last_overload != overload) {
 		uint8_t led_mode = led_control_s::MODE_OFF;
 		uint8_t led_color = led_control_s::COLOR_WHITE;
@@ -2784,7 +2771,7 @@ Commander::control_status_leds(bool changed, const uint8_t battery_warning)
 		uint64_t overload_warn_delay = (_status.arming_state == vehicle_status_s::ARMING_STATE_ARMED) ? 1_ms : 250_ms;
 
 		/* set mode */
-		if (overload && (hrt_elapsed_time(&overload_start) > overload_warn_delay)) {
+		if (overload && (hrt_elapsed_time(&_overload_start) > overload_warn_delay)) {
 			led_mode = led_control_s::MODE_BLINK_FAST;
 			led_color = led_control_s::COLOR_PURPLE;
 
@@ -3504,7 +3491,7 @@ Commander::update_control_mode()
 					!control_mode.flag_control_acceleration_enabled;
 
 			control_mode.flag_control_climb_rate_enabled = (!offboard_control_mode.ignore_velocity ||
-					!offboard_control_mode.ignore_position) && !control_mode.flag_control_acceleration_enabled;
+					!offboard_control_mode.ignore_position);
 
 			control_mode.flag_control_position_enabled = !offboard_control_mode.ignore_position && !_status.in_transition_mode &&
 					!control_mode.flag_control_acceleration_enabled;
@@ -3871,6 +3858,8 @@ void Commander::battery_status_check()
 	hrt_abstime oldest_update = hrt_absolute_time();
 
 	_battery_current = 0.0f;
+	float battery_level = 0.0f;
+
 
 	// Only iterate over connected batteries. We don't care if a disconnected battery is not regularly publishing.
 	for (size_t i = 0; i < num_connected_batteries; i++) {
@@ -3884,6 +3873,35 @@ void Commander::battery_status_check()
 
 		// Sum up current from all batteries.
 		_battery_current += batteries[i].current_filtered_a;
+
+		// average levels from all batteries
+		battery_level += batteries[i].remaining;
+	}
+
+	battery_level /= num_connected_batteries;
+
+	_rtl_flight_time_sub.update();
+	float battery_usage_to_home = 0;
+
+	if (hrt_absolute_time() - _rtl_flight_time_sub.get().timestamp < 2_s) {
+		battery_usage_to_home = _rtl_flight_time_sub.get().rtl_limit_fraction;
+	}
+
+	uint8_t battery_range_warning = battery_status_s::BATTERY_WARNING_NONE;
+
+	if (PX4_ISFINITE(battery_usage_to_home)) {
+		float battery_at_home = battery_level - battery_usage_to_home;
+
+		if (battery_at_home < _param_bat_crit_thr.get()) {
+			battery_range_warning =  battery_status_s::BATTERY_WARNING_CRITICAL;
+
+		} else if (battery_at_home < _param_bat_low_thr.get()) {
+			battery_range_warning = battery_status_s::BATTERY_WARNING_LOW;
+		}
+	}
+
+	if (battery_range_warning > worst_warning) {
+		worst_warning = battery_range_warning;
 	}
 
 	bool battery_warning_level_increased_while_armed = false;
@@ -3904,6 +3922,7 @@ void Commander::battery_status_check()
 	if (update_internal_battery_state) {
 		_battery_warning = worst_warning;
 	}
+
 
 	_status_flags.condition_battery_healthy =
 		// All connected batteries are regularly being published

@@ -574,7 +574,7 @@ void DShot::Run()
 		}
 	}
 
-	if (_param_sub.updated()) {
+	if (_parameter_update_sub.updated()) {
 		update_params();
 	}
 
@@ -603,7 +603,7 @@ void DShot::Run()
 void DShot::update_params()
 {
 	parameter_update_s pupdate;
-	_param_sub.update(&pupdate);
+	_parameter_update_sub.copy(&pupdate);
 
 	updateParams();
 
@@ -725,60 +725,6 @@ int DShot::pwm_ioctl(file *filp, const int cmd, const unsigned long arg)
 		}
 
 		break;
-
-	case PWM_SERVO_SET_COUNT: {
-			/*
-			 * Change the number of outputs that are enabled for
-			 * PWM. This is used to change the split between GPIO
-			 * and PWM under control of the flight config
-			 * parameters.
-			 */
-			switch (arg) {
-			case 0:
-				set_mode(MODE_NONE);
-				break;
-
-			case 1:
-				set_mode(MODE_1PWM);
-				break;
-
-			case 2:
-				set_mode(MODE_2PWM);
-				break;
-
-			case 3:
-				set_mode(MODE_3PWM);
-				break;
-
-			case 4:
-				set_mode(MODE_4PWM);
-				break;
-
-			case 5:
-				set_mode(MODE_5PWM);
-				break;
-
-#if defined(BOARD_HAS_PWM) && BOARD_HAS_PWM >=6
-
-			case 6:
-				set_mode(MODE_6PWM);
-				break;
-#endif
-
-#if defined(BOARD_HAS_PWM) && BOARD_HAS_PWM >=8
-
-			case 8:
-				set_mode(MODE_8PWM);
-				break;
-#endif
-
-			default:
-				ret = -EINVAL;
-				break;
-			}
-
-			break;
-		}
 
 	case PWM_SERVO_SET_MODE: {
 			switch (arg) {

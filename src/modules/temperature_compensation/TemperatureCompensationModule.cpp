@@ -41,7 +41,6 @@
 #include <systemlib/mavlink_log.h>
 
 using namespace temperature_compensation;
-using namespace time_literals;
 
 TemperatureCompensationModule::TemperatureCompensationModule() :
 	ModuleParams(nullptr),
@@ -182,7 +181,7 @@ void TemperatureCompensationModule::Run()
 	perf_begin(_loop_perf);
 
 	// Check if user has requested to run the calibration routine
-	if (_vehicle_command_sub.updated()) {
+	while (_vehicle_command_sub.updated()) {
 		vehicle_command_s cmd;
 
 		if (_vehicle_command_sub.copy(&cmd)) {
@@ -233,10 +232,10 @@ void TemperatureCompensationModule::Run()
 	}
 
 	// Check if any parameter has changed
-	if (_params_sub.updated()) {
+	if (_parameter_update_sub.updated()) {
 		// Read from param to clear updated flag
 		parameter_update_s update;
-		_params_sub.copy(&update);
+		_parameter_update_sub.copy(&update);
 
 		parameters_update();
 	}
