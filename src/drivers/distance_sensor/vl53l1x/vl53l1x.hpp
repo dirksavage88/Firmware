@@ -123,14 +123,14 @@ public:
 	void stop();
 
 	virtual int init() override;
-          
+
 	/**
 	 * Perform a poll cycle; collect from the previous measurement
 	 * and start a new one.
 	 */
 	void RunImpl();
 
-	//Distance mode member variable
+	// Distance mode member variable
 	uint16_t distance_mode;
 
 private:
