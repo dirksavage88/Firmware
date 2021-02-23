@@ -154,9 +154,6 @@ VL53L1X::VL53L1X(I2CSPIBusOption bus_option, const int bus, const uint8_t rotati
 	I2CSPIDriver(MODULE_NAME, px4::device_bus_to_wq(get_device_id()), bus_option, bus),
 	_px4_rangefinder(get_device_id(), rotation)
 {
-	// Set distance mode (1 for ~2m ranging, 2 for ~4m ranging
-	distance_mode = VL53L1X_SHORT_RANGE;
-
 	// VL53L1X typical range 0-4 meters with 27 degree field of view
 	_px4_rangefinder.set_min_distance(0.f);
 
@@ -266,10 +263,8 @@ void VL53L1X::RunImpl()
 
 void VL53L1X::start()
 {
-
 	// Schedule the first cycle.
 	ScheduleNow();
-
 }
 
 int VL53L1X::init()
@@ -761,7 +756,6 @@ extern "C" __EXPORT int vl53l1x_main(int argc, char *argv[])
 
 	if (!strcmp(verb, "start")) {
 		return ThisDriver::module_start(cli, iterator);
-
 	}
 
 	if (!strcmp(verb, "stop")) {
