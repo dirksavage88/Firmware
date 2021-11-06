@@ -62,6 +62,8 @@ pipeline {
                      "modalai_fc-v1_default",
                      "modalai_fc-v1_rtps",
                      "modalai_fc-v2_default",
+                     "mro_cannode_canbootloader",
+                     "mro_cannode_default",
                      "mro_ctrl-zero-f7_default",
                      "mro_ctrl-zero-f7-oem_default",
                      "mro_ctrl-zero-h7_default",

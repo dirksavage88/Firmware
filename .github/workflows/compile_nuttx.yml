@@ -43,6 +43,8 @@ jobs:
           mro_pixracerpro,
           mro_x21,
           mro_x21-777,
+          mro_cannode_canbootloader,
+          mro_cannode_default,
           nxp_fmuk66-e,
           nxp_fmuk66-v3,
           nxp_fmurt1062-v1,
