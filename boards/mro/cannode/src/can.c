@@ -103,11 +103,11 @@ int can_devinit(void)
 	if (!initialized) {
 		/* Call stm32_caninitialize() to get an instance of the CAN interface */
 
-		#ifdef CONFIG_CAN_MCP2515
-                    can = stm32_mcp2515initialize(CAN_PORT);
-                #else
-		    can = stm32_caninitialize(CAN_PORT);
-                #endif
+#ifdef CONFIG_CAN_MCP2515
+		can = stm32_mcp2515initialize(CAN_PORT);
+#else
+		can = stm32_caninitialize(CAN_PORT);
+#endif
 
 		if (can == NULL) {
 			canerr("ERROR:  Failed to get CAN interface\n");
