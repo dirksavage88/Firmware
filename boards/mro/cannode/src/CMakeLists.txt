@@ -54,7 +54,6 @@ else()
 		can.c
 		spi.cpp
 		led.c
-		spi.cpp
 	)
 
 	target_link_libraries(drivers_board

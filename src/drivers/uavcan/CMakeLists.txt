@@ -50,8 +50,13 @@ if(CONFIG_ARCH_CHIP)
 			set (UAVCAN_TIMER  ${config_uavcan_timer_override})
 		endif()
 	elseif(${CONFIG_ARCH_CHIP} MATCHES "stm32")
+                if(${CONFIG_ARCH_CHIP_STM32F303CC})
+                        set(UAVCAN_TIMER 2) # STM32F30X TIM5 doesn't exit
+                else()
+                        set(UAVCAN_TIMER 5) # The default timer is TIM5
+                endif()
 		set(UAVCAN_DRIVER "stm32")
-		set(UAVCAN_TIMER 5) # The default timer is TIM5
+
 		if (DEFINED config_uavcan_timer_override)
 			set (UAVCAN_TIMER  ${config_uavcan_timer_override})
 		endif()
