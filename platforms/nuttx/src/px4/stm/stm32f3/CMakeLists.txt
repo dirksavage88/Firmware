@@ -34,7 +34,9 @@
 
 add_subdirectory(board_critmon)
 add_subdirectory(../stm32_common/board_reset board_reset)
-add_subdirectory(../stm32_common/version version)
 add_subdirectory(../stm32_common/hrt hrt)
+add_subdirectory(../stm32_common/board_hw_info board_hw_info)
+add_subdirectory(../stm32_common/spi spi)
+add_subdirectory(../stm32_common/version version)
 
 add_subdirectory(watchdog)

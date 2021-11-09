@@ -60,6 +60,7 @@ else()
 		PRIVATE
 			arch_spi
 			drivers__led
+                        drivers__device
 			nuttx_arch
 			nuttx_drivers
 			px4_layer
