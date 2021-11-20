@@ -61,6 +61,7 @@ else()
 			arch_spi
 			drivers__led
                         drivers__device
+                        conversion
 			nuttx_arch
 			nuttx_drivers
 			px4_layer
