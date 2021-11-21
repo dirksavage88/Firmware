@@ -54,7 +54,7 @@
 #define FLASH_BASED_PARAMS
 
 /* High-resolution timer */
-#define HRT_TIMER                    3  /* use timer 3 for the HRT */
+#define HRT_TIMER                    1  /* use timer 3 for the HRT */
 #define HRT_TIMER_CHANNEL            4  /* use capture/compare channel 4 */
 
 __BEGIN_DECLS

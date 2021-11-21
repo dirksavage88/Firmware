@@ -47,7 +47,7 @@
 /* Clocking *****************************************************************/
 
 /* HSI - Internal 8 MHz RC Oscillator
- * LSI - 32 KHz RC
+ * LSI - 40 KHz RC
  * HSE - 8 MHz from MCO output of ST-LINK
  * LSE - 32.768 kHz
  */
@@ -83,7 +83,7 @@
 
 /* APB2 timers 1 and 8, 15-17 will receive PCLK2. */
 
-/* Timers driven from APB2 will be PCLK2 */
+/* Timers driven from APB2 will be PCLK2 (72MHZ) */
 #define STM32_APB2_TIM1_CLKIN   (STM32_PCLK2_FREQUENCY)
 #define STM32_APB2_TIM8_CLKIN   (STM32_PCLK2_FREQUENCY)
 #define STM32_APB1_TIM15_CLKIN  (STM32_PCLK2_FREQUENCY)
@@ -94,7 +94,7 @@
 #define STM32_RCC_CFGR_PPRE1    RCC_CFGR_PPRE1_HCLKd2
 #define STM32_PCLK1_FREQUENCY   (STM32_HCLK_FREQUENCY/2)
 
-/* APB1 timers 2-7 will be twice PCLK1 */
+/* APB1 timers 2-7 will be twice PCLK1 (36MHZ) */
 #define STM32_APB1_TIM2_CLKIN   (2*STM32_PCLK1_FREQUENCY)
 #define STM32_APB1_TIM3_CLKIN   (2*STM32_PCLK1_FREQUENCY)
 #define STM32_APB1_TIM4_CLKIN   (2*STM32_PCLK1_FREQUENCY)
@@ -112,7 +112,6 @@
 #define BOARD_TIM2_FREQUENCY   (STM32_HCLK_FREQUENCY / 2)
 #define BOARD_TIM3_FREQUENCY   (STM32_HCLK_FREQUENCY / 2)
 #define BOARD_TIM4_FREQUENCY   (STM32_HCLK_FREQUENCY / 2)
-#define BOARD_TIM5_FREQUENCY   (STM32_HCLK_FREQUENCY / 2)
 #define BOARD_TIM6_FREQUENCY   (STM32_HCLK_FREQUENCY / 2)
 #define BOARD_TIM7_FREQUENCY   (STM32_HCLK_FREQUENCY / 2)
 #define BOARD_TIM8_FREQUENCY   STM32_HCLK_FREQUENCY
