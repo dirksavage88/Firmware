@@ -67,6 +67,8 @@ __EXPORT void stm32_boardinitialize(void)
 	putreg32(getreg32(STM32_RCC_APB1RSTR) | RCC_APB1RSTR_CAN1RST, STM32_RCC_APB1RSTR);
 	putreg32(getreg32(STM32_RCC_APB1RSTR) & ~RCC_APB1RSTR_CAN1RST, STM32_RCC_APB1RSTR);
 
+	led_init();
+
 #if defined(OPT_WAIT_FOR_GETNODEINFO_JUMPER_GPIO)
 	stm32_configgpio(GPIO_GETNODEINFO_JUMPER);
 #endif
@@ -155,48 +157,19 @@ void board_indicate(uiindication_t indication)
 {
 	switch (indication) {
 	case off:
-		// led_off(GPIO_nLED_RED);
-		//led_off(GPIO_LED_BLUE);
+		led_off(GPIO_LED_BLUE);
 		break;
 
 	case reset:
-		// led_on(GPIO_nLED_RED);
-		//led_off(GPIO_LED_BLUE);
+		led_toggle(GPIO_LED_BLUE);
 		break;
 
 	case jump_to_app:
-		// led_on(GPIO_nLED_RED);
-		//led_on(GPIO_LED_BLUE);
+		led_on(GPIO_LED_BLUE);
 		break;
 
 	default:
 		break;
 	}
-
-// #define led(n, code, r , g , b, h) {.red = (r),.green = (g), .blue = (b),.hz = (h)}
-
-// typedef begin_packed_struct struct led_t {
-// 	uint8_t red;
-// 	uint8_t green;
-// 	uint8_t blue;
-// 	uint8_t hz;
-// } end_packed_struct led_t;
-
-// static const  led_t i2l[] = {
-
-// 	led(0, off,                             0,     0,     0,     0),
-// 	led(1, reset,                          128,   128,   128,   30),
-// 	led(2, autobaud_start,                  0,   128,     0,     1),
-// 	led(3, autobaud_end,                    0,   128,     0,     2),
-// 	led(4, allocation_start,                0,     0,    64,     2),
-// 	led(5, allocation_end,                  0,   128,    64,     3),
-// 	led(6, fw_update_start,                32,   128,    64,     3),
-// 	led(7, fw_update_erase_fail,           32,   128,    32,     3),
-// 	led(8, fw_update_invalid_response,     64,     0,     0,     1),
-// 	led(9, fw_update_timeout,              64,     0,     0,     2),
-// 	led(a, fw_update_invalid_crc,          64,     0,     0,     4),
-// 	led(b, jump_to_app,                     0,   128,     0,    10),
-
-// };
 
 }

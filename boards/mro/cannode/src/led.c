@@ -55,7 +55,6 @@
  * CONFIG_ARCH_LEDS configuration switch.
  */
 static uint32_t g_ledmap[] = {
-	//GPIO_LED_RED,
 	GPIO_LED_BLUE,
 };
 
