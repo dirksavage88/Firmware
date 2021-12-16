@@ -86,8 +86,8 @@
 # define BS1_VALUE 10
 # define BS2_VALUE 1
 #elif STM32_PCLK1_FREQUENCY == 36000000
-/* Sample 87.5 % */
-#define QUANTA 16
+/* Sample 88.9 % */
+#define QUANTA 36
 #define BS1_VALUE 14
 #define BS2_VALUE 1
 #else
@@ -286,7 +286,8 @@ uint8_t can_rx(uint32_t *message_id, size_t *length, uint8_t *message, uint8_t f
 	uint32_t data[2];
 	uint8_t rv = 0;
 	const uint32_t fifos[] = { STM32_CAN1_RF0R, STM32_CAN1_RF1R };
-        assert(CAN_RFR_FMP_MASK);
+	assert(CAN_RFR_FMP_MASK);
+
 	if (getreg32(fifos[fifo & 1]) & CAN_RFR_FMP_MASK) {
 
 		rv = 1;
