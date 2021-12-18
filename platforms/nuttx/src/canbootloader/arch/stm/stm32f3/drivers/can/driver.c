@@ -75,33 +75,28 @@
 # define QUANTA 16
 # define BS1_VALUE 12
 # define BS2_VALUE 1
-#elif STM32_PCLK1_FREQUENCY == 45000000
+#elif STM32_PCLK1_FREQUENCY == 45000000 || STM32_PCLK1_FREQUENCY == 36000000
 /* Sample 88.9 % */
 # define QUANTA 9
 # define BS1_VALUE 6
 # define BS2_VALUE 0
 #elif STM32_PCLK1_FREQUENCY == 42000000
 /* Sample 85.7 % */
-# define QUANTA
+# define QUANTA 14
 # define BS1_VALUE 10
 # define BS2_VALUE 1
-#elif STM32_PCLK1_FREQUENCY == 36000000
-/* Sample 88.9 % */
-#define QUANTA 36
-#define BS1_VALUE 14
-#define BS2_VALUE 1
 #else
 # warning Undefined QUANTA bsed on Clock Rate
 /* Sample 85.7 % */
-# define QUANTA 9
-# define BS1_VALUE 6
-# define BS2_VALUE 0
+# define QUANTA 14
+# define BS1_VALUE 10
+# define BS2_VALUE 1
 #endif
 
 #define CAN_1MBAUD_SJW 0
 #define CAN_1MBAUD_BS1 BS1_VALUE
 #define CAN_1MBAUD_BS2 BS2_VALUE
-#define CAN_1MBAUD_PRESCALER (STM32_PCLK1_FREQUENCY/1000000/QUANTA) /* default BRP = 4, changed to 2 */
+#define CAN_1MBAUD_PRESCALER (STM32_PCLK1_FREQUENCY/1000000/QUANTA)
 
 #define CAN_500KBAUD_SJW 0
 #define CAN_500KBAUD_BS1 BS1_VALUE
@@ -124,7 +119,7 @@
 #define CAN_125KBAUD_BIT_CYCLES (8*(TIMER_HRT_CYCLES_PER_US))
 
 #define CAN_BAUD_TIME_IN_MS             200
-#define CAN_BAUD_SAMPLES_NEEDED         40 //was 32
+#define CAN_BAUD_SAMPLES_NEEDED         32
 #define CAN_BAUD_SAMPLES_DISCARDED      8
 
 static inline uint32_t read_msr_rx(void)
@@ -152,7 +147,6 @@ static int read_bits_times(time_hrt_cycles_t *times, size_t max)
 	while (samplecnt < max && !timer_ref_expired(ab_ref)) {
 		do {
 			msr = read_msr(&times[samplecnt]);
-
 		} while (!(msr ^ last_msr) && !timer_ref_expired(ab_ref));
 
 		last_msr = msr;
@@ -286,7 +280,6 @@ uint8_t can_rx(uint32_t *message_id, size_t *length, uint8_t *message, uint8_t f
 	uint32_t data[2];
 	uint8_t rv = 0;
 	const uint32_t fifos[] = { STM32_CAN1_RF0R, STM32_CAN1_RF1R };
-	assert(CAN_RFR_FMP_MASK);
 
 	if (getreg32(fifos[fifo & 1]) & CAN_RFR_FMP_MASK) {
 

@@ -7,7 +7,7 @@
     "summary": "mROCANNode",
     "version": "0.1",
     "image_size": 0,
-    "image_maxsize": 262144,
+    "image_maxsize": 243712,
     "git_identity": "",
     "board_revision": 0
 }

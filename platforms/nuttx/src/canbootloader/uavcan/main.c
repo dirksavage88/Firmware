@@ -1241,11 +1241,11 @@ __EXPORT int main(int argc, char *argv[])
 	 * So we wait for the NodeInfoRequest and our response to be sent of if
 	 * tBoot is running a time tBoot out.
 	 */
-	while (!bootloader.sent_node_info_response) {
+	/*while (!bootloader.sent_node_info_response) {
 		if (timer_expired(tboot)) {
 			goto boot;
 		}
-	}
+	}*/
 
 	/*
 	 * Now we have seen and responded to the NodeInfoRequest
