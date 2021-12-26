@@ -1,6 +1,7 @@
 /****************************************************************************
  *
- *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
+ *       Author: David Sidrane <david.sidrane@nscdg.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,8 +31,72 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
-#pragma once
 
+#include <nuttx/config.h>
 
-#include "../../../stm32_common/include/px4_arch/io_timer.h"
+#include "chip.h"
+#include "stm32.h"
+#include <hardware/stm32_wdg.h>
+#include "nvic.h"
 
+/****************************************************************************
+ * Name: watchdog_pet()
+ *
+ * Description:
+ *   This function resets the Independent watchdog (IWDG)
+ *
+ *
+ * Input Parameters:
+ *   none.
+ *
+ * Returned value:
+ *   none.
+ *
+ ****************************************************************************/
+
+void watchdog_pet(void)
+{
+	putreg32(IWDG_KR_KEY_RELOAD, STM32_IWDG_KR);
+}
+
+/****************************************************************************
+ * Name: watchdog_init()
+ *
+ * Description:
+ *   This function initialize the Independent watchdog (IWDG)
+ *
+ *
+ * Input Parameters:
+ *   none.
+ *
+ * Returned value:
+ *   none.
+ *
+ ****************************************************************************/
+
+void watchdog_init(void)
+{
+#if defined(CONFIG_STM32_JTAG_FULL_ENABLE) || \
+    defined(CONFIG_STM32_JTAG_NOJNTRST_ENABLE) || \
+    defined(CONFIG_STM32_JTAG_SW_ENABLE)
+	putreg32(getreg32(STM32_DBGMCU_APB1_FZ) | DBGMCU_APB1_IWDGSTOP, STM32_DBGMCU_APB1_FZ);
+#endif
+
+	/* unlock */
+
+	putreg32(IWDG_KR_KEY_ENABLE, STM32_IWDG_KR);
+
+	/* Set the prescale value */
+
+	putreg32(IWDG_PR_DIV16, STM32_IWDG_PR);
+
+	/* Set the reload value */
+
+	putreg32(IWDG_RLR_MAX, STM32_IWDG_RLR);
+
+	/* Start the watch dog */
+
+	putreg32(IWDG_KR_KEY_START, STM32_IWDG_KR);
+
+	watchdog_pet();
+}

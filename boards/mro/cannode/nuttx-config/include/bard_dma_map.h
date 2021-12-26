@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,8 +30,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
+
 #pragma once
 
+// DMA1 Channel/Stream Selections
+//--------------------------------------------//---------------------------//----------------
 
-#include "../../../stm32_common/include/px4_arch/io_timer.h"
 
+//  DMA2 Channel/Stream Selections
+//--------------------------------------------//---------------------------//----------------
+#define DMACHAN_SPI1_RX    DMAMAP_SPI1_RX_2   // DMA2, Stream 2, Channel 3
+#define DMACHAN_SPI2_RX    DMAMAP_SPI2_RX     // DMA2, Stream 3, Channel 0
+#define DMACHAN_SPI2_TX    DMAMAP_SPI2_TX     // DMA2, Stream 4, Channel 0
+#define DMACHAN_SPI1_TX    DMAMAP_SPI1_TX_1   // DMA2, Stream 5, Channel 3

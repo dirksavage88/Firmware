@@ -1,6 +1,7 @@
 /****************************************************************************
  *
- *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2021 PX4 Development Team. All rights reserved.
+ *   Author: >
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,8 +31,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
-#pragma once
 
-
-#include "../../../stm32_common/include/px4_arch/io_timer.h"
-
+__BEGIN_DECLS
+void led_init(void);
+void led_on(int led);
+void led_off(int led);
+void led_toggle(int led);
+__END_DECLS
