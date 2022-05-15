@@ -1,6 +1,8 @@
-/****************************************************************************
+/************************************************************************************
+ * configs/px4fmu/include/board_dma_map.h
  *
- *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2009 Gregory Nutt. All rights reserved.
+ *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,7 +14,7 @@
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
- * 3. Neither the name PX4 nor the names of its contributors may be
+ * 3. Neither the name NuttX nor the names of its contributors may be
  *    used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -29,9 +31,16 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- ****************************************************************************/
+ ************************************************************************************/
 #pragma once
 
+// DMA1 Channel/Stream Selections
+//--------------------------------------------//---------------------------//----------------
 
-#include "../../../stm32_common/include/px4_arch/io_timer.h"
 
+//  DMA2 Channel/Stream Selections
+//--------------------------------------------//---------------------------//----------------
+#define DMACHAN_SPI1_RX    DMAMAP_SPI1_RX_2   // DMA2, Stream 2, Channel 3
+#define DMACHAN_SPI2_RX    DMAMAP_SPI2_RX     // DMA2, Stream 3, Channel 0
+#define DMACHAN_SPI2_TX    DMAMAP_SPI2_TX     // DMA2, Stream 4, Channel 0
+#define DMACHAN_SPI1_TX    DMAMAP_SPI1_TX_1   // DMA2, Stream 5, Channel 3

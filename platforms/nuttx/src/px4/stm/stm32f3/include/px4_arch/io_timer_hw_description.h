@@ -33,5 +33,32 @@
 #pragma once
 
 
-#include "../../../stm32_common/include/px4_arch/io_timer.h"
+#include "../../../stm32_common/include/px4_arch/io_timer_hw_description.h"
 
+static inline constexpr timer_io_channels_t initIOTimerGPIOInOut(Timer::TimerChannel timer, GPIO::GPIOPin pin)
+{
+	timer_io_channels_t ret{};
+	uint32_t gpio_af = 0;
+
+	switch (timer.timer) {
+	case Timer::Timer1:
+	case Timer::Timer2:
+		gpio_af = GPIO_AF1;
+		break;
+
+	case Timer::Timer3:
+	case Timer::Timer4:
+	case Timer::Timer6:
+	case Timer::Timer7:
+	case Timer::Timer8:
+	case Timer::Timer9:
+	case Timer::Timer10:
+	case Timer::Timer12:
+	case Timer::Timer13:
+	}
+
+	uint32_t pin_port = getGPIOPort(pin.port) | getGPIOPin(pin.pin);
+	ret.gpio_in = gpio_af | (GPIO_ALT | GPIO_SPEED_50MHz | GPIO_FLOAT) | pin_port;
+	ret.gpio_out = gpio_af | (GPIO_ALT | GPIO_SPEED_50MHz | GPIO_PUSHPULL) | pin_port;
+	return ret;
+}
