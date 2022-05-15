@@ -85,7 +85,9 @@ __EXPORT void stm32_boardinitialize(void)
 	// Configure CAN interface
 	stm32_configgpio(GPIO_CAN1_RX);
 	stm32_configgpio(GPIO_CAN1_TX);
-
+	/* configure pins */
+	//const uint32_t gpio[] = PX4_GPIO_INIT_LIST;
+	//px4_gpio_init(gpio, arraySize(gpio));
 	// Configure SPI all interfaces GPIO & enable power.
 	stm32_spiinitialize();
 }
@@ -121,7 +123,7 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 
 #if defined(FLASH_BASED_PARAMS)
 	static sector_descriptor_t params_sector_map[] = {
-		{2, 10 * 1024, 0x08004000},
+		{1, 10 * 1024, 0x08004000},
 		{0, 0, 0},
 	};
 
@@ -135,8 +137,8 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 
 #endif // FLASH_BASED_PARAMS
 
-	drv_led_start();
-	led_on(LED_BLUE);
+	//drv_led_start();
+	//led_on(LED_BLUE);
 
 	/* Configure the HW based on the manifest */
 

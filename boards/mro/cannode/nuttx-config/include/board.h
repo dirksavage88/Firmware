@@ -37,6 +37,7 @@
 #ifndef __ARCH_BOARD_BOARD_H
 #define __ARCH_BOARD_BOARD_H
 
+#include "board_dma_map.h"
 #include <nuttx/config.h>
 #ifndef __ASSEMBLY__
 # include <stdint.h>
