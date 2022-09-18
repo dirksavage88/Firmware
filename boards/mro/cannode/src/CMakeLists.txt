@@ -49,7 +49,7 @@ if("${PX4_BOARD_LABEL}" STREQUAL  "canbootloader")
 
 else()
 	add_library(drivers_board
-		i2c.cpp
+		#i2c.cpp
 		init.c
 		can.c
 		spi.cpp
@@ -60,10 +60,10 @@ else()
 		PRIVATE
 			arch_spi
 			drivers__led
-                        drivers__device
                         conversion
 			nuttx_arch
 			nuttx_drivers
 			px4_layer
+#                        px4_platform
 	)
 endif()
