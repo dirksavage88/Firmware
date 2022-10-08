@@ -66,8 +66,8 @@
 
 #include <px4_platform_common/init.h>
 
-# if defined(FLASH_BASED_PARAMS)
-#  include <parameters/flashparams/flashfs.h>
+#if defined(FLASH_BASED_PARAMS)
+#include <parameters/flashparams/flashfs.h>
 #endif
 
 /************************************************************************************
@@ -123,7 +123,8 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 
 #if defined(FLASH_BASED_PARAMS)
 	static sector_descriptor_t params_sector_map[] = {
-		{8, 4 * 1024, 0x08004000},
+		{7, 2 * 1024, 0x08004000},
+		{8, 2 * 1024, 0x08004800},
 		{0, 0, 0},
 	};
 
