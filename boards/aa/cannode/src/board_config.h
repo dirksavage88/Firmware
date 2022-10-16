@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,22 +30,57 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
+
+/**
+ * @file board_config.h
+ *
+ * board internal definitions
+ */
+
 #pragma once
 
+#include <px4_platform_common/px4_config.h>
+#include <nuttx/compiler.h>
+#include <stdint.h>
 
-#include "../../../stm32_common/include/px4_arch/micro_hal.h"
+/* Boot config */
+#define GPIO_BOOT_CONFIG      /* PB6 */ (GPIO_INPUT|GPIO_PORTB|GPIO_PIN6|GPIO_EXTI)
+
+//#define GPIO_CAN1_SILENT_S0  /* PB5  */ (GPIO_OUTPUT|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTB|GPIO_PIN5)
+
+/* LEDs */
+//#define GPIO_LED_BLUE         /* PA4  */ (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTA|GPIO_PIN4)
+
+//#define GPIO_BTN_SAFETY              (GPIO_INPUT|GPIO_PORTC|GPIO_PIN13)
+
+#define FLASH_BASED_PARAMS
+
+
+#define GPIO_USART2_RX_GPIO     (GPIO_INPUT|GPIO_SPEED_50MHz|GPIO_PORTA|GPIO_PIN3)
+#define GPIO_USART2_TX_GPIO     (GPIO_OUTPUT|GPIO_SPEED_50MHz|GPIO_PORTA|GPIO_PIN2)
+
+#define GPIO_USART3_RX_GPIO     (GPIO_INPUT|GPIO_SPEED_50MHz|GPIO_PORTB|GPIO_PIN11)
+#define GPIO_USART3_TX_GPIO     (GPIO_OUTPUT|GPIO_SPEED_50MHz|GPIO_PORTB|GPIO_PIN10)
+
+
+#define GPIO_UART4_RX_GPIO     (GPIO_INPUT|GPIO_SPEED_50MHz|GPIO_PORTC|GPIO_PIN11)
+#define GPIO_UART4_TX_GPIO     (GPIO_OUTPUT|GPIO_SPEED_50MHz|GPIO_PORTC|GPIO_PIN10)
+
+#define GPIO_UART5_RX_GPIO     (GPIO_INPUT|GPIO_SPEED_50MHz|GPIO_PORTD|GPIO_PIN2)
+#define GPIO_UART5_TX_GPIO     (GPIO_OUTPUT|GPIO_SPEED_50MHz|GPIO_PORTC|GPIO_PIN12)
+
+/* High-resolution timer */
+#define HRT_TIMER                    3  /* use timer 3 for the HRT */
+#define HRT_TIMER_CHANNEL            4  /* use capture/compare channel 4 */
 
 __BEGIN_DECLS
 
-#include <stm32.h>
-#define PX4_SOC_ARCH_ID             PX4_SOC_ARCH_ID_STM32F4
-#define PX4_FLASH_BASE  STM32_FLASH_BASE
-#if defined(CONFIG_STM32_STM32F4XXX)
-# include <stm32_bbsram.h>
-# define PX4_BBSRAM_SIZE STM32_BBSRAM_SIZE
-# define PX4_BBSRAM_GETDESC_IOCTL STM32_BBSRAM_GETDESC_IOCTL
-#endif
-#define PX4_NUMBER_I2C_BUSES STM32_NI2C
-#define PX4_ADC_INTERNAL_TEMP_SENSOR_CHANNEL 16
+#ifndef __ASSEMBLY__
+
+extern void stm32_spiinitialize(void);
+
+#include <px4_platform_common/board_common.h>
+
+#endif /* __ASSEMBLY__ */
 
 __END_DECLS

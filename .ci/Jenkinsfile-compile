@@ -91,6 +91,8 @@ pipeline {
                      "nxp_ucans32k146_canbootloader",
                      "nxp_ucans32k146_default",
                      "omnibus_f4sd_default",
+                     "aa_cannode_canbootloader",
+                     "aa_cannode_default",
                      "px4_fmu-v2_default",
                      "px4_fmu-v2_fixedwing",
                      "px4_fmu-v2_lto",
