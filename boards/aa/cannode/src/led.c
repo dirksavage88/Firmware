@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,16 +30,66 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
-#pragma once
 
+/**
+ * @file led.c
+ *
+ * board LED backend.
+ */
 
-#include "../../../stm32_common/include/px4_arch/io_timer_hw_description.h"
+#include <px4_platform_common/px4_config.h>
 
-static inline constexpr timer_io_channels_t initIOTimerGPIOInOut(Timer::TimerChannel timer, GPIO::GPIOPin pin)
+#include <stdbool.h>
+
+#include "stm32.h"
+#include "board_config.h"
+#include "led.h"
+
+#include <arch/board/board.h>
+
+/*
+ * Ideally we'd be able to get these from up_internal.h,
+ * but since we want to be able to disable the NuttX use
+ * of leds for system indication at will and there is no
+ * separate switch, we need to build independent of the
+ * CONFIG_ARCH_LEDS configuration switch.
+ */
+static uint32_t g_ledmap[] = {
+	GPIO_LED_BLUE,
+};
+
+__EXPORT void led_init(void)
 {
-	timer_io_channels_t ret{};
-	uint32_t pin_port = getGPIOPort(pin.port) | getGPIOPin(pin.pin);
-	ret.gpio_in = (GPIO_INPUT | GPIO_CNF_INFLOAT | GPIO_MODE_INPUT) | pin_port;
-	ret.gpio_out = (GPIO_ALT | GPIO_CNF_AFPP | GPIO_MODE_50MHz) | pin_port;
-	return ret;
+	/* Configure LED GPIOs for output */
+	for (size_t l = 0; l < (sizeof(g_ledmap) / sizeof(g_ledmap[0])); l++) {
+		stm32_configgpio(g_ledmap[l]);
+		stm32_gpiowrite(g_ledmap[l], true);
+	}
+}
+
+static void phy_set_led(int led, bool state)
+{
+	/* Pull Down to switch on */
+	stm32_gpiowrite(g_ledmap[led], !state);
+}
+
+static bool phy_get_led(int led)
+{
+
+	return !stm32_gpioread(g_ledmap[led]);
+}
+
+__EXPORT void led_on(int led)
+{
+	phy_set_led(led, true);
+}
+
+__EXPORT void led_off(int led)
+{
+	phy_set_led(led, false);
+}
+
+__EXPORT void led_toggle(int led)
+{
+	phy_set_led(led, !phy_get_led(led));
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,16 +30,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
-#pragma once
 
+#include <px4_arch/spi_hw_description.h>
+#include <drivers/drv_sensor.h>
+#include <nuttx/spi/spi.h>
 
-#include "../../../stm32_common/include/px4_arch/io_timer_hw_description.h"
+constexpr px4_spi_bus_t px4_spi_buses[SPI_BUS_MAX_BUS_ITEMS] = {
+	initSPIBus(SPI::Bus::SPI1, {
+		initSPIDevice(DRV_DEVTYPE_UNUSED, SPI::CS{GPIO::PortA, GPIO::Pin15}),
+	}),
+};
 
-static inline constexpr timer_io_channels_t initIOTimerGPIOInOut(Timer::TimerChannel timer, GPIO::GPIOPin pin)
-{
-	timer_io_channels_t ret{};
-	uint32_t pin_port = getGPIOPort(pin.port) | getGPIOPin(pin.pin);
-	ret.gpio_in = (GPIO_INPUT | GPIO_CNF_INFLOAT | GPIO_MODE_INPUT) | pin_port;
-	ret.gpio_out = (GPIO_ALT | GPIO_CNF_AFPP | GPIO_MODE_50MHz) | pin_port;
-	return ret;
-}
+static constexpr bool unused = validateSPIConfig(px4_spi_buses);

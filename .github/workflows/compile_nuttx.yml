@@ -57,6 +57,8 @@ jobs:
           nxp_fmurt1062-v1,
           nxp_ucans32k146,
           omnibus_f4sd,
+          aa_cannode_canbootloader,
+          aa_cannode_default,
           px4_fmu-v2,
           px4_fmu-v3,
           px4_fmu-v4,

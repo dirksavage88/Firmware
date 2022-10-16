@@ -261,6 +261,16 @@ CONFIG:
       buildType: MinSizeRel
       settings:
         CONFIG: nxp_fmuk66-v3_default
+    aa_cannode_default:
+      short: prototype_cannode_default
+      buildType: MinSizeRel
+      settings:
+        CONFIG: prototype_cannode_default
+    aa_cannode_canbootloader:
+      short: prototype_cannode_canbootloader
+      buildType: MinSizeRel
+      settings:
+        CONFIG: prototype_cannode_canbootloader
     raspberrypi_pico_default:
       short: raspberrypi_pico
       buildType: MinSizeRel
