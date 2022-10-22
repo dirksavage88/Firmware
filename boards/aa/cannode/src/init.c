@@ -55,7 +55,6 @@
 #include <stm32.h>
 #include "board_config.h"
 #include "led.h"
-
 #include <stm32_uart.h>
 
 #include <arch/board/board.h>
@@ -85,9 +84,6 @@
 __EXPORT void stm32_boardinitialize(void)
 {
 	// Configure CAN interface
-	//stm32_configgpio(GPIO_CAN1_RX);
-	//stm32_configgpio(GPIO_CAN1_TX);
-	/* configure pins */
 	const uint32_t gpio[] = PX4_GPIO_INIT_LIST;
 	px4_gpio_init(gpio, arraySize(gpio));
 	// Configure SPI all interfaces GPIO & enable power.
