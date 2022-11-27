@@ -53,6 +53,7 @@ else()
 		init.c
 		can.c
 		spi.cpp
+		#usb.c
 		#led.c
 	)
 

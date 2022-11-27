@@ -87,8 +87,7 @@ __EXPORT void stm32_boardinitialize(void)
 	const uint32_t gpio[] = PX4_GPIO_INIT_LIST;
 	px4_gpio_init(gpio, arraySize(gpio));
 	// Configure SPI all interfaces GPIO & enable power.
-	// TODO: stm32_common defines pushpull, which does not exist stm32f10x
-	// stm32_spiinitialize();
+	stm32_spiinitialize();
 }
 
 /****************************************************************************

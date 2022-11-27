@@ -7,6 +7,7 @@
 # board sensors init
 #------------------------------------------------------------------------------
 icm42688p -R 0 -s start
+mpu9250 start -s
 
 if param compare -s SENS_EN_BATT 1
 then
@@ -120,3 +121,12 @@ rm3100 -X -q start
 
 # start last (wait for possible icm20948 passthrough mode)
 ak09916 -X -q start
+
+# Mag bias estimator
+if param compare -s MBE_ENABLE 1
+then
+	# conservative mag bias estimation
+	param set-default MBE_LEARN_GAIN 5
+	param set-default IMU_GYRO_CUTOFF 20
+	mag_bias_estimator start
+fi

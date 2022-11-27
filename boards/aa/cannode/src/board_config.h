@@ -87,5 +87,22 @@ extern void stm32_spiinitialize(void);
 #include <px4_platform_common/board_common.h>
 
 #endif /* __ASSEMBLY__ */
+/****************************************************************************************************
+ * Name: stm32_usbinitialize
+ *
+ * Description:
+ *   Called to configure USB IO.
+ *
+ ****************************************************************************************************/
+
+#ifndef __ASSEMBLY__
+
+extern void stm32_usbinitialize(void);
+
+//extern void board_peripheral_reset(int ms);
+
+#include <px4_platform_common/board_common.h>
+
+#endif /* __ASSEMBLY__ */
 
 __END_DECLS

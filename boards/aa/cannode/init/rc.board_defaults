@@ -2,3 +2,5 @@
 #
 # board specific defaults
 #------------------------------------------------------------------------------
+
+param set-default MBE_ENABLE 1
