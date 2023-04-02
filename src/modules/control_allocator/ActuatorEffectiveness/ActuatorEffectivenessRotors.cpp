@@ -45,9 +45,10 @@
 
 using namespace matrix;
 
-ActuatorEffectivenessRotors::ActuatorEffectivenessRotors(ModuleParams *parent, AxisConfiguration axis_config,
-		bool tilt_support)
-	: ModuleParams(parent), _axis_config(axis_config), _tilt_support(tilt_support)
+ActuatorEffectivenessRotors::ActuatorEffectivenessRotors(
+	ModuleParams *parent, AxisConfiguration axis_config, bool tilt_support)
+	: ModuleParams(parent), _axis_config(axis_config),
+	  _tilt_support(tilt_support)
 {
 	for (int i = 0; i < NUM_ROTORS_MAX; ++i) {
 		char buffer[17];
@@ -95,7 +96,10 @@ void ActuatorEffectivenessRotors::updateParams()
 		return;
 	}
 
-	_geometry.num_rotors = math::min(NUM_ROTORS_MAX, (int)count);
+	if (count != 0) {
+
+		_geometry.num_rotors = math::min(NUM_ROTORS_MAX, (int)count);
+	}
 
 	for (int i = 0; i < _geometry.num_rotors; ++i) {
 		Vector3f &position = _geometry.rotors[i].position;
@@ -122,7 +126,8 @@ void ActuatorEffectivenessRotors::updateParams()
 		}
 
 		param_get(_param_handles[i].thrust_coef, &_geometry.rotors[i].thrust_coef);
-		param_get(_param_handles[i].moment_ratio, &_geometry.rotors[i].moment_ratio);
+		param_get(_param_handles[i].moment_ratio,
+			  &_geometry.rotors[i].moment_ratio);
 
 		if (_tilt_support) {
 			int32_t tilt_param{0};
@@ -135,24 +140,24 @@ void ActuatorEffectivenessRotors::updateParams()
 	}
 }
 
-bool
-ActuatorEffectivenessRotors::addActuators(Configuration &configuration)
+bool ActuatorEffectivenessRotors::addActuators(Configuration &configuration)
 {
 	if (configuration.num_actuators[(int)ActuatorType::SERVOS] > 0) {
 		PX4_ERR("Wrong actuator ordering: servos need to be after motors");
 		return false;
 	}
 
-	int num_actuators = computeEffectivenessMatrix(_geometry,
-			    configuration.effectiveness_matrices[configuration.selected_matrix],
-			    configuration.num_actuators_matrix[configuration.selected_matrix]);
+	int num_actuators = computeEffectivenessMatrix(
+				    _geometry,
+				    configuration.effectiveness_matrices[configuration.selected_matrix],
+				    configuration.num_actuators_matrix[configuration.selected_matrix]);
 	configuration.actuatorsAdded(ActuatorType::MOTORS, num_actuators);
 	return true;
 }
 
-int
-ActuatorEffectivenessRotors::computeEffectivenessMatrix(const Geometry &geometry,
-		EffectivenessMatrix &effectiveness, int actuator_start_index)
+int ActuatorEffectivenessRotors::computeEffectivenessMatrix(
+	const Geometry &geometry, EffectivenessMatrix &effectiveness,
+	int actuator_start_index)
 {
 	int num_actuators = 0;
 
@@ -190,7 +195,8 @@ ActuatorEffectivenessRotors::computeEffectivenessMatrix(const Geometry &geometry
 		}
 
 		if (geometry.propeller_torque_disabled_non_upwards) {
-			bool upwards = fabsf(axis(0)) < 0.1f && fabsf(axis(1)) < 0.1f && axis(2) < -0.5f;
+			bool upwards =
+				fabsf(axis(0)) < 0.1f && fabsf(axis(1)) < 0.1f && axis(2) < -0.5f;
 
 			if (!upwards) {
 				km = 0.f;
@@ -214,15 +220,18 @@ ActuatorEffectivenessRotors::computeEffectivenessMatrix(const Geometry &geometry
 		}
 
 		if (geometry.yaw_by_differential_thrust_disabled) {
-			// set yaw effectiveness to 0 if yaw is controlled by other means (e.g. tilts)
+			// set yaw effectiveness to 0 if yaw is controlled by other means (e.g.
+			// tilts)
 			effectiveness(2, i + actuator_start_index) = 0.f;
 		}
 
 		if (geometry.three_dimensional_thrust_disabled) {
-			// Special case tiltrotor: instead of passing a 3D thrust vector (that would mostly have a x-component in FW, and z in MC),
-			// pass the vector magnitude as z-component, plus the collective tilt. Passing 3D thrust plus tilt is not feasible as they
-			// can't be allocated independently, and with the current controller it's not possible to have collective tilt calculated
-			// by the allocator directly.
+			// Special case tiltrotor: instead of passing a 3D thrust vector (that
+			// would mostly have a x-component in FW, and z in MC), pass the vector
+			// magnitude as z-component, plus the collective tilt. Passing 3D thrust
+			// plus tilt is not feasible as they can't be allocated independently, and
+			// with the current controller it's not possible to have collective tilt
+			// calculated by the allocator directly.
 
 			effectiveness(0 + 3, i + actuator_start_index) = 0.f;
 			effectiveness(1 + 3, i + actuator_start_index) = 0.f;
@@ -233,8 +242,8 @@ ActuatorEffectivenessRotors::computeEffectivenessMatrix(const Geometry &geometry
 	return num_actuators;
 }
 
-uint32_t ActuatorEffectivenessRotors::updateAxisFromTilts(const ActuatorEffectivenessTilts &tilts,
-		float collective_tilt_control)
+uint32_t ActuatorEffectivenessRotors::updateAxisFromTilts(
+	const ActuatorEffectivenessTilts &tilts, float collective_tilt_control)
 {
 	if (!PX4_ISFINITE(collective_tilt_control)) {
 		collective_tilt_control = -1.f;
@@ -251,7 +260,8 @@ uint32_t ActuatorEffectivenessRotors::updateAxisFromTilts(const ActuatorEffectiv
 		}
 
 		const ActuatorEffectivenessTilts::Params &tilt = tilts.config(tilt_index);
-		const float tilt_angle = math::lerp(tilt.min_angle, tilt.max_angle, (collective_tilt_control + 1.f) / 2.f);
+		const float tilt_angle = math::lerp(tilt.min_angle, tilt.max_angle,
+						    (collective_tilt_control + 1.f) / 2.f);
 		const float tilt_direction = math::radians((float)tilt.tilt_direction);
 		_geometry.rotors[i].axis = tiltedAxis(tilt_angle, tilt_direction);
 	}
@@ -259,7 +269,8 @@ uint32_t ActuatorEffectivenessRotors::updateAxisFromTilts(const ActuatorEffectiv
 	return nontilted_motors;
 }
 
-Vector3f ActuatorEffectivenessRotors::tiltedAxis(float tilt_angle, float tilt_direction)
+Vector3f ActuatorEffectivenessRotors::tiltedAxis(float tilt_angle,
+		float tilt_direction)
 {
 	Vector3f axis{0.f, 0.f, -1.f};
 	return Dcmf{Eulerf{0.f, -tilt_angle, tilt_direction}} * axis;
@@ -280,9 +291,8 @@ uint32_t ActuatorEffectivenessRotors::getUpwardsMotors() const
 	return upwards_motors;
 }
 
-bool
-ActuatorEffectivenessRotors::getEffectivenessMatrix(Configuration &configuration,
-		EffectivenessUpdateReason external_update)
+bool ActuatorEffectivenessRotors::getEffectivenessMatrix(
+	Configuration &configuration, EffectivenessUpdateReason external_update)
 {
 	if (external_update == EffectivenessUpdateReason::NO_EXTERNAL_UPDATE) {
 		return false;
