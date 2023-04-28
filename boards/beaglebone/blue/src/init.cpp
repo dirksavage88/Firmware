@@ -65,15 +65,20 @@ int rc_init(void)
 	// start state as Uninitialized
 	rc_set_state(UNINITIALIZED);
 
-	// initialize pinmux
-	/*
-	if (rc_pinmux_set_default()) {
-	        PX4_ERR("rc_init failed to run rc_pinmux_set_default()");
-	        return -1;
+	if (rc_servo_init()) { // Configures the PRU to send servo pulses
+		PX4_ERR("rc_init failed to run rc_servo_init()");
+		return -1;
 	}
-	// rc_pinmux_set_default() includes: rc_pinmux_set(DSM_HEADER_PIN,
-	PINMUX_UART);
-	 */
+
+	// initialize pinmux
+
+	int ret = 0;
+	/*if (rc_pinmux_set_default()) {
+	  PX4_ERR("rc_init failed to run rc_pinmux_set_default()");
+	  return -1;
+	}*/
+	//  rc_pinmux_set_default() includes: rc_pinmux_set(DSM_HEADER_PIN,
+	//  PINMUX_UART);
 
 	/*
 	// Due to device tree issue, rc_pinmux_set_default() currently does not work
@@ -81,53 +86,48 @@ int rc_init(void)
 	// with kernel 4.14, use a simplified version for now
 	//
 	// shared pins
-
-	ret |= rc_pinmux_set(DSM_HEADER_PIN, PINMUX_UART);
-	ret |= rc_pinmux_set(GPS_HEADER_PIN_3, PINMUX_UART);
-	ret |= rc_pinmux_set(GPS_HEADER_PIN_4, PINMUX_UART);
-	ret |= rc_pinmux_set(UART1_HEADER_PIN_3, PINMUX_UART);
-	ret |= rc_pinmux_set(UART1_HEADER_PIN_4, PINMUX_UART);
-
+	*/
+	ret |= rc_pinmux_set(BLUE_SPI_PIN_6_SS1, PINMUX_SPI);
+	// ret |= rc_pinmux_set(SPI_HEADER_PIN_3, PINMUX_SPI);
+	// ret |= rc_pinmux_set(SPI_HEADER_PIN_4, PINMUX_SPI);
+	// ret |= rc_pinmux_set(SPI_HEADER_PIN_5, PINMUX_SPI);
+	//  ret |= rc_pinmux_set(UART1_HEADER_PIN_4, PINMUX_UART);
+	/*
 	if (ret != 0) {
-	        PX4_ERR("rc_init failed to set default pinmux");
-	        return -1;
+	  PX4_ERR("rc_init failed to set default pinmux");
+	  return -1;
 	}
 	*/
-
 	// no direct equivalent of configure_gpio_pins()
-
-	int ret = 0;
 
 	if (rc_adc_init()) {
 		PX4_ERR("rc_init failed to run rc_adc_init()");
 		return -1;
 	}
 
-	if (rc_servo_init()) { // Configures the PRU to send servo pulses
-		PX4_ERR("rc_init failed to run rc_servo_init()");
-		// return -1;
-	}
-
 	if (rc_servo_power_rail_en(1)) { // Turning On 6V Servo Power Rail
 		PX4_ERR("rc_init failed to run rc_servo_power_rail_en(1)");
-		// return -1;
+		return -1;
 	}
 
 	// Init spi bus 1
-
-	ret = rc_spi_init_auto_slave(1, 0, SPI_MODE_0, 24000000);
+	// ret |= rc_spi_init_auto_slave(1, 0, SPI_MODE_0, 24000000);
+	ret |= rc_spi_init_manual_slave(1, 0, SPI_MODE_0, 24000000, RC_BLUE_SS1_GPIO);
 
 	if (ret != 0) {
 
-		PX4_ERR("rc_init failed to run rc_spi_init_auto_slave()");
+		PX4_ERR("rc_init failed to run rc_spi_init");
 		return -1;
 
 	} else {
 
-		PX4_INFO("rc_init successful spi init");
+		ret |= rc_spi_manual_select(1, 0, 1);
 	}
 
 	// i2c, barometer and mpu will be initialized later
+	if (ret == 0) {
+		PX4_INFO("Spi init success");
+	}
 
 	rc_set_state(RUNNING);
 
