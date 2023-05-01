@@ -40,14 +40,14 @@
  * @author Julian Oes <julian@oes.ch>
  */
 
-#include <string>
-#include <sstream>
-#include <vector>
 #include <algorithm>
-#include <stdio.h>
-#include <poll.h>
 #include <fcntl.h>
+#include <poll.h>
+#include <sstream>
+#include <stdio.h>
+#include <string>
 #include <unistd.h>
+#include <vector>
 
 #include "pxh.h"
 
@@ -128,8 +128,10 @@ int Pxh::process_line(const std::string &line, bool silently_fail)
 		return 0;
 
 	} else if (!silently_fail) {
-		//std::cout << "Invalid command: " << command << "\ntype 'help' for a list of commands" << endl;
-		printf("Invalid command: %s\ntype 'help' for a list of commands\n", command.c_str());
+		// std::cout << "Invalid command: " << command << "\ntype 'help' for a list
+		// of commands" << endl;
+		printf("Invalid command: %s\ntype 'help' for a list of commands\n",
+		       command.c_str());
 		return -1;
 
 	} else {
@@ -150,7 +152,7 @@ void Pxh::_check_remote_uorb_command(std::string &line)
 	line_stream >> word;
 
 	if (word == "uorb") {
-		line += " -1";  // Run uorb command only once
+		line += " -1"; // Run uorb command only once
 	}
 }
 
@@ -193,10 +195,13 @@ void Pxh::run_remote_pxh(int remote_in_fd, int remote_out_fd)
 	// stdout and stderr will be sent to the local terminal and a copy of the data
 	// will be sent over to the mavlink shell through the remote_out_fd.
 	//
-	// Any data from remote_in_fd will be process as shell commands when an '\n' is received
+	// Any data from remote_in_fd will be process as shell commands when an '\n'
+	// is received
 	while (!_should_exit) {
 
-		struct pollfd fds[3] { {pipe_stderr, POLLIN}, {pipe_stdout, POLLIN}, {remote_in_fd, POLLIN}};
+		struct pollfd fds[3] {
+			{pipe_stderr, POLLIN}, {pipe_stdout, POLLIN}, {remote_in_fd, POLLIN}
+		};
 
 		if (poll(fds, 3, -1) == -1) {
 			perror("Mavlink Shell Poll Error");
@@ -205,14 +210,15 @@ void Pxh::run_remote_pxh(int remote_in_fd, int remote_out_fd)
 
 		if (fds[0].revents & POLLIN) {
 
-			uint8_t buffer[512];
+			char buffer[512];
 			size_t len;
 
 			if ((len = read(pipe_stderr, buffer, sizeof(buffer))) <= 0) {
-				break; //EOF or ERROR
+				break; // EOF or ERROR
 			}
 
-			// Send all the stderr data to the local terminal as well as the remote shell
+			// Send all the stderr data to the local terminal as well as the remote
+			// shell
 			if (write(backup_stderr_fd, buffer, len) <= 0) {
 				perror("Remote shell write stdout");
 				break;
@@ -229,14 +235,15 @@ void Pxh::run_remote_pxh(int remote_in_fd, int remote_out_fd)
 
 		if (fds[1].revents & POLLIN) {
 
-			uint8_t buffer[512];
+			char buffer[512];
 			size_t len;
 
 			if ((len = read(pipe_stdout, buffer, sizeof(buffer))) <= 0) {
-				break; //EOF or ERROR
+				break; // EOF or ERROR
 			}
 
-			// Send all the stdout data to the local terminal as well as the remote shell
+			// Send all the stdout data to the local terminal as well as the remote
+			// shell
 			if (write(backup_stdout_fd, buffer, len) <= 0) {
 				perror("Remote shell write stdout");
 				break;
@@ -258,7 +265,7 @@ void Pxh::run_remote_pxh(int remote_in_fd, int remote_out_fd)
 
 			switch (c) {
 
-			case '\n':	// user hit enter
+			case '\n': // user hit enter
 				printf("\n");
 				_check_remote_uorb_command(mystr);
 				process_line(mystr, false);
@@ -269,7 +276,7 @@ void Pxh::run_remote_pxh(int remote_in_fd, int remote_out_fd)
 
 				break;
 
-			default:	// any other input
+			default: // any other input
 				if (c > 3) {
 					fprintf(stdout, "%c", c);
 					fflush(stdout);
@@ -320,14 +327,14 @@ void Pxh::run_pxh()
 			_tab_completion(mystr);
 			break;
 
-		case 127:	// backslash
+		case 127: // backslash
 			if ((int)mystr.length() - cursor_position > 0) {
 				mystr.erase(mystr.length() - cursor_position - 1, 1);
 			}
 
 			break;
 
-		case '\n':	// user hit enter
+		case '\n': // user hit enter
 			_history.try_to_add(mystr);
 			_history.reset_to_end();
 
@@ -341,8 +348,8 @@ void Pxh::run_pxh()
 			_print_prompt();
 			break;
 
-		case '\033': {	// arrow keys
-				c = getchar();	// skip first one, does not have the info
+		case '\033': {   // arrow keys
+				c = getchar(); // skip first one, does not have the info
 				c = getchar();
 
 				if (c == 'A') { // arrow up
@@ -367,22 +374,23 @@ void Pxh::run_pxh()
 				} else if (c == 'H') { // Home (go to the beginning of the command)
 					cursor_position = mystr.length();
 
-				} else if (c == '1') { // Home (go to the beginning of the command, Editing key)
-					(void)getchar(); // swallow '~'
+				} else if (c == '1') { // Home (go to the beginning of the command,
+					// Editing key)
+					(void)getchar();     // swallow '~'
 					cursor_position = mystr.length();
 
 				} else if (c == 'F') { // End (go to the end of the command)
 					cursor_position = 0;
 
 				} else if (c == '4') { // End (go to the end of the command, Editing key)
-					(void)getchar(); // swallow '~'
+					(void)getchar();     // swallow '~'
 					cursor_position = 0;
 				}
 
 				break;
 			}
 
-		default:	// any other input
+		default: // any other input
 			if (c > 3) {
 				add_string += (char)c;
 
@@ -444,14 +452,8 @@ void Pxh::_print_prompt()
 	fflush(stdout);
 }
 
-void Pxh::_clear_line()
-{
-	printf("%c[2K%c", (char)27, (char)13);
-}
-void Pxh::_move_cursor(int position)
-{
-	printf("\033[%dD", position);
-}
+void Pxh::_clear_line() { printf("%c[2K%c", (char)27, (char)13); }
+void Pxh::_move_cursor(int position) { printf("\033[%dD", position); }
 
 void Pxh::_tab_completion(std::string &mystr)
 {
@@ -465,7 +467,7 @@ void Pxh::_tab_completion(std::string &mystr)
 
 		printf("\n");
 
-		for (auto it = _apps.begin(); it != _apps.end();  ++it) {
+		for (auto it = _apps.begin(); it != _apps.end(); ++it) {
 			printf("%s ", it->first.c_str());
 		}
 
@@ -477,7 +479,7 @@ void Pxh::_tab_completion(std::string &mystr)
 		// find tab completion matches
 		std::vector<std::string> matches;
 
-		for (auto it = _apps.begin(); it != _apps.end();  ++it) {
+		for (auto it = _apps.begin(); it != _apps.end(); ++it) {
 			if (it->first.compare(0, cmd.size(), cmd) == 0) {
 				matches.push_back(it->first);
 			}
@@ -511,7 +513,7 @@ void Pxh::_tab_completion(std::string &mystr)
 			std::string longest_match;
 			bool done = false;
 
-			for (int i = 0; i < (int)min_size ; ++i) {
+			for (int i = 0; i < (int)min_size; ++i) {
 				bool first_time = true;
 
 				for (const auto &item : matches) {
@@ -526,7 +528,9 @@ void Pxh::_tab_completion(std::string &mystr)
 					}
 				}
 
-				if (done) { break; }
+				if (done) {
+					break;
+				}
 
 				mystr = longest_match;
 			}

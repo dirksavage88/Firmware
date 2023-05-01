@@ -36,8 +36,8 @@
  *
  * BBBLUE specific initialization
  */
-#include <stddef.h>
 #include <px4_platform_common/log.h>
+#include <stddef.h>
 
 #include <robotcontrol.h>
 
@@ -50,7 +50,9 @@ int rc_init(void)
 	return rc_initialize();
 #else
 
-	if (rc_get_state() == RUNNING) {  return 0; }
+	if (rc_get_state() == RUNNING) {
+		return 0;
+	}
 
 	PX4_INFO("Initializing librobotcontrol ...");
 
@@ -63,42 +65,43 @@ int rc_init(void)
 	// start state as Uninitialized
 	rc_set_state(UNINITIALIZED);
 
-	// initialize pinmux
-	/*
-	if (rc_pinmux_set_default()) {
-		PX4_ERR("rc_init failed to run rc_pinmux_set_default()");
+	if (rc_servo_init()) { // Configures the PRU to send servo pulses
+		PX4_ERR("rc_init failed to run rc_servo_init()");
 		return -1;
 	}
-	// rc_pinmux_set_default() includes: rc_pinmux_set(DSM_HEADER_PIN, PINMUX_UART);
-	 */
+
+	// initialize pinmux
+
+	int ret = 0;
+	/*if (rc_pinmux_set_default()) {
+	  PX4_ERR("rc_init failed to run rc_pinmux_set_default()");
+	  return -1;
+	}*/
+	//  rc_pinmux_set_default() includes: rc_pinmux_set(DSM_HEADER_PIN,
+	//  PINMUX_UART);
 
 	/*
-	// Due to device tree issue, rc_pinmux_set_default() currently does not work correctly
+	// Due to device tree issue, rc_pinmux_set_default() currently does not work
+	correctly
 	// with kernel 4.14, use a simplified version for now
 	//
 	// shared pins
-	int ret = 0;
-	ret |= rc_pinmux_set(DSM_HEADER_PIN, PINMUX_UART);
-	ret |= rc_pinmux_set(GPS_HEADER_PIN_3, PINMUX_UART);
-	ret |= rc_pinmux_set(GPS_HEADER_PIN_4, PINMUX_UART);
-	ret |= rc_pinmux_set(UART1_HEADER_PIN_3, PINMUX_UART);
-	ret |= rc_pinmux_set(UART1_HEADER_PIN_4, PINMUX_UART);
-
+	*/
+	ret |= rc_pinmux_set(BLUE_SPI_PIN_6_SS1, PINMUX_SPI);
+	// ret |= rc_pinmux_set(SPI_HEADER_PIN_3, PINMUX_SPI);
+	// ret |= rc_pinmux_set(SPI_HEADER_PIN_4, PINMUX_SPI);
+	// ret |= rc_pinmux_set(SPI_HEADER_PIN_5, PINMUX_SPI);
+	//  ret |= rc_pinmux_set(UART1_HEADER_PIN_4, PINMUX_UART);
+	/*
 	if (ret != 0) {
-		PX4_ERR("rc_init failed to set default pinmux");
-		return -1;
+	  PX4_ERR("rc_init failed to set default pinmux");
+	  return -1;
 	}
 	*/
-
 	// no direct equivalent of configure_gpio_pins()
 
 	if (rc_adc_init()) {
 		PX4_ERR("rc_init failed to run rc_adc_init()");
-		return -1;
-	}
-
-	if (rc_servo_init()) {  // Configures the PRU to send servo pulses
-		PX4_ERR("rc_init failed to run rc_servo_init()");
 		return -1;
 	}
 
@@ -107,7 +110,24 @@ int rc_init(void)
 		return -1;
 	}
 
-	//i2c, barometer and mpu will be initialized later
+	// Init spi bus 1
+	// ret |= rc_spi_init_auto_slave(1, 0, SPI_MODE_0, 24000000);
+	ret |= rc_spi_init_manual_slave(1, 0, SPI_MODE_0, 24000000, RC_BLUE_SS1_GPIO);
+
+	if (ret != 0) {
+
+		PX4_ERR("rc_init failed to run rc_spi_init");
+		return -1;
+
+	} else {
+
+		ret |= rc_spi_manual_select(1, 0, 1);
+	}
+
+	// i2c, barometer and mpu will be initialized later
+	if (ret == 0) {
+		PX4_INFO("Spi init success");
+	}
 
 	rc_set_state(RUNNING);
 
@@ -115,14 +135,16 @@ int rc_init(void)
 #endif
 }
 
-
 void rc_cleaning(void)
 {
 #ifdef __RC_V0_3
-	rc_cleanup();  return ;
+	rc_cleanup();
+	return;
 #else
 
-	if (rc_get_state() == EXITING) { return; }
+	if (rc_get_state() == EXITING) {
+		return;
+	}
 
 	rc_set_state(EXITING);
 
