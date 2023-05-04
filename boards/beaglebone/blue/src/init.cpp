@@ -42,6 +42,7 @@
 #include <robotcontrol.h>
 
 #include "board_config.h"
+#define MAX_BUFF 5
 
 // initialize roboticscape library similar to the deprecated rc_initialize()
 int rc_init(void)
@@ -73,6 +74,7 @@ int rc_init(void)
 	// initialize pinmux
 
 	int ret = 0;
+	uint8_t buff[MAX_BUFF];
 	/*if (rc_pinmux_set_default()) {
 	  PX4_ERR("rc_init failed to run rc_pinmux_set_default()");
 	  return -1;
@@ -87,10 +89,12 @@ int rc_init(void)
 	//
 	// shared pins
 	*/
-	ret |= rc_pinmux_set(BLUE_SPI_PIN_6_SS1, PINMUX_SPI);
-	// ret |= rc_pinmux_set(SPI_HEADER_PIN_3, PINMUX_SPI);
-	// ret |= rc_pinmux_set(SPI_HEADER_PIN_4, PINMUX_SPI);
-	// ret |= rc_pinmux_set(SPI_HEADER_PIN_5, PINMUX_SPI);
+
+	/*  ret |= rc_pinmux_set(BLUE_SPI_PIN_6_SS2, PINMUX_SPI);
+	  ret |= rc_pinmux_set(SPI_HEADER_PIN_3, PINMUX_SPI);
+	  ret |= rc_pinmux_set(SPI_HEADER_PIN_4, PINMUX_SPI);
+	  ret |= rc_pinmux_set(SPI_HEADER_PIN_5, PINMUX_SPI);
+	*/
 	//  ret |= rc_pinmux_set(UART1_HEADER_PIN_4, PINMUX_UART);
 	/*
 	if (ret != 0) {
@@ -111,8 +115,14 @@ int rc_init(void)
 	}
 
 	// Init spi bus 1
-	// ret |= rc_spi_init_auto_slave(1, 0, SPI_MODE_0, 24000000);
-	ret |= rc_spi_init_manual_slave(1, 0, SPI_MODE_0, 24000000, RC_BLUE_SS1_GPIO);
+	// Tried auto, did not work: ret |= rc_spi_init_auto_slave(1, 1, SPI_MODE_0,
+	// 2000000);
+	// Use for GP0 SPI port
+	// ret |= rc_spi_init_manual_slave(1, 1, SPI_MODE_0, 2000000,
+	// RC_CAPE_SS1_GPIO);
+
+	// Use for SPI 1.1
+	ret |= rc_spi_init_manual_slave(1, 0, SPI_MODE_3, 2000000, RC_BLUE_SS1_GPIO);
 
 	if (ret != 0) {
 
@@ -124,9 +134,15 @@ int rc_init(void)
 		ret |= rc_spi_manual_select(1, 0, 1);
 	}
 
-	// i2c, barometer and mpu will be initialized later
 	if (ret == 0) {
 		PX4_INFO("Spi init success");
+		ret |= rc_spi_read(1, 0, buff, 5);
+
+		for (int i = 0; i < 5; ++i) {
+			printf("Data: %d\n", buff[i]);
+		}
+
+		PX4_INFO("RC SPI data checks finished...");
 	}
 
 	rc_set_state(RUNNING);
@@ -152,7 +168,7 @@ void rc_cleaning(void)
 
 	rc_servo_power_rail_en(0);
 	rc_servo_cleanup();
-
+	// rc_spi_close(1);
 	rc_remove_pid_file();
 #endif
 }
