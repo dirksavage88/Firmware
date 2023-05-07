@@ -73,8 +73,8 @@ int rc_init(void)
 
 	// initialize pinmux
 
-	int ret = 0;
-	uint8_t buff[MAX_BUFF];
+	// int ret = 0;
+	// uint8_t buff[MAX_BUFF];
 	/*if (rc_pinmux_set_default()) {
 	  PX4_ERR("rc_init failed to run rc_pinmux_set_default()");
 	  return -1;
@@ -122,29 +122,30 @@ int rc_init(void)
 	// RC_CAPE_SS1_GPIO);
 
 	// Use for SPI 1.1
-	ret |= rc_spi_init_manual_slave(1, 0, SPI_MODE_3, 2000000, RC_BLUE_SS1_GPIO);
+	/*ret |= rc_spi_init_manual_slave(1, 0, SPI_MODE_3, 2000000,
+	RC_BLUE_SS1_GPIO);
 
 	if (ret != 0) {
 
-		PX4_ERR("rc_init failed to run rc_spi_init");
-		return -1;
+	        PX4_ERR("rc_init failed to run rc_spi_init");
+	        return -1;
 
 	} else {
 
-		ret |= rc_spi_manual_select(1, 0, 1);
+	        ret |= rc_spi_manual_select(1, 0, 1);
 	}
 
 	if (ret == 0) {
-		PX4_INFO("Spi init success");
-		ret |= rc_spi_read(1, 0, buff, 5);
+	        PX4_INFO("Spi init success");
+	        ret |= rc_spi_read(1, 0, buff, 5);
 
-		for (int i = 0; i < 5; ++i) {
-			printf("Data: %d\n", buff[i]);
-		}
+	        for (int i = 0; i < 5; ++i) {
+	                printf("Data: %d\n", buff[i]);
+	        }
 
-		PX4_INFO("RC SPI data checks finished...");
+	        PX4_INFO("RC SPI data checks finished...");
 	}
-
+	*/
 	rc_set_state(RUNNING);
 
 	return 0;
