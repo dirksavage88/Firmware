@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2023 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,11 +32,11 @@
  ****************************************************************************/
 
 /**
- * VL53L1X Distance Sensor
+ * VL53L5CX Distance Sensor
  *
  * @reboot_required true
  *
  * @boolean
  * @group Sensors
  */
-PARAM_DEFINE_INT32(SENS_EN_VL53L1X, 0);
+PARAM_DEFINE_INT32(SENS_EN_VL53L5CX, 0);

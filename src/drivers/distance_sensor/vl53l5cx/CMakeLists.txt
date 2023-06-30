@@ -32,11 +32,12 @@
 ############################################################################
 
 px4_add_module(
-	MODULE drivers__distance_sensor__vl53l1x
-	MAIN vl53l1x
+	MODULE drivers__distance_sensor__vl53l5cx
+	MAIN vl53l5cx
 	SRCS
-		vl53l1x.cpp
-		vl53l1x.hpp
+		vl53l5cx.cpp
+		vl53l5cx.hpp
+		vl53l5cx_buffers.h
 	DEPENDS
 		drivers_rangefinder
 		px4_work_queue

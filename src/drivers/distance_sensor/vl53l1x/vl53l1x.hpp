@@ -48,7 +48,8 @@
 #include <drivers/drv_hrt.h>
 #include <lib/perf/perf_counter.h>
 #include <lib/drivers/rangefinder/PX4Rangefinder.hpp>
-
+#include <px4_platform_common/defines.h>
+#include <px4_platform_common/px4_work_queue/ScheduledWorkItem.hpp>
 /* ST */
 #define SOFT_RESET                                          0x0000
 #define VL53L1_I2C_SLAVE__DEVICE_ADDRESS                    0x0001
