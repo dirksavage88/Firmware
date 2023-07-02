@@ -37,7 +37,8 @@
 #include "vl53l1x.hpp"
 #include <px4_platform_common/module.h>
 
-#define VL53L1X_DELAY                          20   //ms
+#define VL53L1X_DELAY                          200000   // delay to reduce CPU usage (us)
+#define VL53L1X_DELAY_CHECK_DATA               100000 // check for data (us)
 #define VL53L1X_SAMPLE_RATE                    200  // ms, default
 #define VL53L1X_INTER_MEAS_MS				           200 // ms
 #define VL53L1X_SHORT_RANGE			            1  // sub-2 meter distance mode
@@ -164,7 +165,7 @@ static const uint8_t status_rtn[24] = { 255, 255, 255, 5, 2, 4, 1, 7, 3, 0,
 
 // ROI array assignment
 
-// uint8_t roi_center[] = {VL53L1X_ROI_FAR_RIGHT, VL53L1X_ROI_MID_RIGHT, VL53L1X_ROI_CENTER_LEFT, VL53L1X_ROI_MID_LEFT, VL53L1X_ROI_FAR_LEFT, VL53L1X_ROI_FAR_RIGHT_LO, VL53L1X_ROI_MID_RIGHT_LO, VL53L1X_ROI_CENTER_LEFT_LO,  VL53L1X_ROI_MID_LEFT_LO, VL53L1X_ROI_FAR_LEFT_LO, VL53L1X_ROI_FAR_RIGHT_HI, VL53L1X_ROI_MID_RIGHT_HI, VL53L1X_ROI_CENTER_LEFT_HI, VL53L1X_ROI_MID_LEFT_HI, VL53L1X_ROI_FAR_LEFT_HI};
+uint8_t roi_center[] = {VL53L1X_ROI_FAR_RIGHT, VL53L1X_ROI_MID_RIGHT, VL53L1X_ROI_CENTER_LEFT, VL53L1X_ROI_MID_LEFT, VL53L1X_ROI_FAR_LEFT, VL53L1X_ROI_FAR_RIGHT_LO, VL53L1X_ROI_MID_RIGHT_LO, VL53L1X_ROI_CENTER_LEFT_LO,  VL53L1X_ROI_MID_LEFT_LO, VL53L1X_ROI_FAR_LEFT_LO, VL53L1X_ROI_FAR_RIGHT_HI, VL53L1X_ROI_MID_RIGHT_HI, VL53L1X_ROI_CENTER_LEFT_HI, VL53L1X_ROI_MID_LEFT_HI, VL53L1X_ROI_FAR_LEFT_HI};
 
 VL53L1X::VL53L1X(const I2CSPIDriverConfig &config) :
 	I2C(config),
@@ -186,7 +187,7 @@ VL53L1X::VL53L1X(const I2CSPIDriverConfig &config) :
 	_px4_rangefinder.set_fov(math::radians(27.f));
 
 	// Zone limits
-	// _zone_limit = sizeof(roi_center) / sizeof(uint8_t);
+	_zone_limit = sizeof(roi_center) / sizeof(uint8_t);
 
 	// Zone index
 	_zone_index = 0;
@@ -265,21 +266,18 @@ void VL53L1X::RunImpl()
 
 	uint8_t dataReady = 0;
 
-  ScheduleOnInterval(20000);
-	//TODOScheduleClear();
-
 	VL53L1X_CheckForDataReady(&dataReady);
 
 	if (dataReady == 1) {
 		collect();
 	}
 
+	// Reduce CPU usage, run at 5hz
 	ScheduleDelayed(VL53L1X_DELAY);
-   //Remove to reduce CPU usage
 	// zone modulus increment
-	// _zone_index = (_zone_index + 1) % _zone_limit;
+	_zone_index = (_zone_index + 1) % _zone_limit;
 	// Set the ROI center based on zone incrementation
-	// VL53L1X_SetROICenter(roi_center[_zone_index]);
+	VL53L1X_SetROICenter(roi_center[_zone_index]);
 }
 
 int VL53L1X::init()
@@ -294,14 +292,14 @@ int VL53L1X::init()
 
 	// Spad width (x) & height (y)
 
-	// uint8_t x = 4;
-	// uint8_t y = 4;
+	uint8_t x = 4;
+	uint8_t y = 4;
 
 
 	ret |= VL53L1X_SensorInit();
 	ret |= VL53L1X_ConfigBig(_distance_mode, VL53L1X_SAMPLE_RATE);
-	// ret |= VL53L1X_SetROI(x, y);
-	// ret |= VL53L1X_SetROICenter(roi_center[_zone_index]);
+	ret |= VL53L1X_SetROI(x, y);
+	ret |= VL53L1X_SetROICenter(roi_center[_zone_index]);
 	ret |= VL53L1X_SetInterMeasurementInMs(VL53L1X_INTER_MEAS_MS);
 	ret |= VL53L1X_StartRanging();
 
@@ -494,6 +492,7 @@ int8_t VL53L1X::VL53L1X_CheckForDataReady(uint8_t *isDataReady)
 	uint8_t IntPol;
 	int8_t status = 0;
 
+
 	status = VL53L1X_GetInterruptPolarity(&IntPol);
 	status = VL53L1_RdByte(GPIO__TIO_HV_STATUS, &Temp);
 
@@ -504,8 +503,12 @@ int8_t VL53L1X::VL53L1X_CheckForDataReady(uint8_t *isDataReady)
 
 		} else {
 			*isDataReady = 0;
+
 		}
 	}
+
+	// Reduce CPU usage, only check for data every 100ms
+	ScheduleDelayed(VL53L1X_DELAY_CHECK_DATA);
 
 	return status;
 }
@@ -526,6 +529,7 @@ int8_t VL53L1X::VL53L1X_ClearInterrupt()
 	int8_t status = 0;
 
 	status = VL53L1_WrByte(SYSTEM__INTERRUPT_CLEAR, 0x01);
+
 	return status;
 }
 
@@ -534,6 +538,8 @@ int8_t VL53L1X::VL53L1X_StopRanging()
 	int8_t status = 0;
 
 	status = VL53L1_WrByte(SYSTEM__MODE_START, 0x00);    /* Disable VL53L1X */
+
+	ScheduleClear();
 	return status;
 }
 
