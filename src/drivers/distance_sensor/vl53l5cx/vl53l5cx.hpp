@@ -203,11 +203,11 @@
  * the output configuration.
  */
 
-#if VL53L5CX_MAX_RESULTS_SIZE < 1024U
-#define VL53L5CX_TEMPORARY_BUFFER_SIZE ((uint32_t)1024U)
-#else
-#define VL53L5CX_TEMPORARY_BUFFER_SIZE ((uint32_t)VL53L5CX_MAX_RESULTS_SIZE)
-#endif
+// #if VL53L5CX_MAX_RESULTS_SIZE < 256U
+#define VL53L5CX_TEMPORARY_BUFFER_SIZE ((uint32_t)512U)
+// #else
+// #define VL53L5CX_TEMPORARY_BUFFER_SIZE ((uint32_t)VL53L5CX_MAX_RESULTS_SIZE)
+// #endif
 
 union Block_header {
 	uint32_t bytes;
@@ -227,7 +227,6 @@ typedef struct {
 /* ST API Configuration*/
 //TODO: fill out configuration struct
 typedef struct {
-	/* Platform, filled by customer into the 'platform.h' file */
 	VL53L5CX_Platform platform;
 	/* Results streamcount, value auto-incremented at each range */
 	uint8_t streamcount;
@@ -245,6 +244,7 @@ typedef struct {
 	uint8_t temp_buffer[VL53L5CX_TEMPORARY_BUFFER_SIZE];
 	/* Auto-stop flag for stopping the sensor */
 	uint8_t is_auto_stop_enabled;
+	uint8_t resolution;
 } VL53L5CX_Configuration;
 
 /* ST API Results */

@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define VL53L5CX_DELAY 20 // ms
+#define VL53L5CX_DELAY 10000 // us
 #define VL53L5CX_UNSHIFTED_I2C_ADDR 0x29
 
 VL53L5CX::VL53L5CX(const I2CSPIDriverConfig &config)
@@ -126,10 +126,9 @@ int VL53L5CX::probe()
 	ret = vl53l5cx_is_alive(&l5_config, &active);
 
 	if (!active || ret) {
-		// if (ret != PX4_OK ) {
 
 		PX4_INFO("Error: sensor not connected");
-		// return -EIO;
+		return -EIO;
 	}
 
 	_retries = 1;
@@ -216,9 +215,13 @@ int8_t VL53L5CX::VL53L5CX_SensorInit()
 
 int8_t VL53L5CX::VL53L5CX_StartRanging()
 {
+	uint8_t resolution = 0;
 	int8_t status = 0;
-
-	status = vl53l5cx_start_ranging(&l5_config); /* Enable VL53L5CX */
+	status |= vl53l5cx_set_resolution(&l5_config, VL53L5CX_RESOLUTION_4X4); /* Set resolution to 4x4 spad */
+	ScheduleDelayed(10000);
+	status |= vl53l5cx_get_resolution(&l5_config, &resolution);
+	PX4_INFO("Resolution set as: %d, status: %d", resolution, status);
+	status |= vl53l5cx_start_ranging(&l5_config); /* Enable VL53L5CX */
 	return status;
 }
 
@@ -246,6 +249,7 @@ int8_t VL53L5CX::VL53L5CX_StopRanging()
 	int8_t status = 0;
 
 	status = vl53l5cx_stop_ranging(&l5_config); /* Disable VL53L5CX */
+	ScheduleClear();
 	return status;
 }
 
@@ -370,9 +374,11 @@ uint8_t VL53L5CX::RdMulti(VL53L5CX_Platform *p_platform, uint16_t RegisterAddres
 	}
 
 	/* Read the incoming buffer from the sensor */
+	for (uint32_t i = 0; i < size; ++i) {
 
-	ret = transfer(nullptr, 0, p_values, size);
+		ret = transfer(nullptr, 0, &p_values[i], 1);
 
+	}
 
 	if (ret != PX4_OK) {
 		perf_count(_comms_errors);
@@ -605,12 +611,14 @@ uint8_t VL53L5CX::vl53l5cx_send_xtalk_data(VL53L5CX_Configuration *p_dev,
 
 	return status;
 }
-
+// TODO: get/set resolution is not working, maybe due to dci read
 uint8_t VL53L5CX::vl53l5cx_dci_read_data(VL53L5CX_Configuration *p_dev, uint8_t *data,
 		uint32_t index, uint16_t data_size)
 {
 	int16_t i;
 	uint8_t status = VL53L5CX_STATUS_OK;
+
+	// Read size is the data size plus cmd bytes (12)
 	uint32_t rd_size = (uint32_t)data_size + (uint32_t)12;
 	uint8_t cmd[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			 0x00, 0x0f, 0x00, 0x02, 0x00, 0x08
@@ -619,6 +627,7 @@ uint8_t VL53L5CX::vl53l5cx_dci_read_data(VL53L5CX_Configuration *p_dev, uint8_t 
 	/* Check if tmp buffer is large enough */
 	if ((data_size + (uint16_t)12) > (uint16_t)VL53L5CX_TEMPORARY_BUFFER_SIZE) {
 		status |= VL53L5CX_STATUS_ERROR;
+		PX4_INFO("Data to read too large");
 
 	} else {
 		cmd[0] = (uint8_t)(index >> 8);
@@ -631,7 +640,6 @@ uint8_t VL53L5CX::vl53l5cx_dci_read_data(VL53L5CX_Configuration *p_dev, uint8_t 
 				  cmd, sizeof(cmd));
 		status |= vl53l5cx_poll_for_answer(p_dev, 4, 1, VL53L5CX_UI_CMD_STATUS,
 						   0xff, 0x03);
-
 		//TODO: debug why temp_buffer has no data
 		/* Read new data sent (4 bytes header + data_size + 8 bytes footer) */
 		status |= RdMulti(&(p_dev->platform), VL53L5CX_UI_CMD_START,
@@ -780,7 +788,6 @@ uint8_t VL53L5CX::vl53l5cx_set_resolution(VL53L5CX_Configuration *p_dev,
 
 	status |= vl53l5cx_send_offset_data(p_dev, resolution);
 	status |= vl53l5cx_send_xtalk_data(p_dev, resolution);
-
 	return status;
 }
 
@@ -938,8 +945,8 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 	/* Get offset NVM data and store them into the offset buffer */
 	status |= WrMulti(&(p_dev->platform), 0x2fd8, (uint8_t *)VL53L5CX_GET_NVM_CMD,
 			  sizeof(VL53L5CX_GET_NVM_CMD));
-
-	WaitMs(&(p_dev->platform), 10);
+// Changed to 20, was 10
+	WaitMs(&(p_dev->platform), 20);
 
 
 	/* poll fails and subsequent polls also fail, see fix in function */
@@ -990,7 +997,7 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 
 uint8_t VL53L5CX::vl53l5cx_start_ranging(VL53L5CX_Configuration *p_dev)
 {
-	uint8_t resolution, status = VL53L5CX_STATUS_OK;
+	uint8_t status = VL53L5CX_STATUS_OK;
 	uint32_t tmp;
 	uint32_t i;
 	uint32_t header_config[2] = {0, 0};
@@ -998,11 +1005,9 @@ uint8_t VL53L5CX::vl53l5cx_start_ranging(VL53L5CX_Configuration *p_dev)
 	union Block_header *bh_ptr;
 	uint8_t cmd[] = {0x00, 0x03, 0x00, 0x00};
 
-	status |= vl53l5cx_get_resolution(p_dev, &resolution);
-	PX4_INFO("Resolution set as: %d", resolution);
+
 	p_dev->data_read_size = 0;
 	p_dev->streamcount = 255;
-// TODO: figure out where we are failing in this function
 	/* Enable mandatory output (meta and common data) */
 	uint32_t output_bh_enable[] = {0x00000007U, 0x00000000U, 0x00000000U,
 				       0xC0000000U
@@ -1061,10 +1066,10 @@ uint8_t VL53L5CX::vl53l5cx_start_ranging(VL53L5CX_Configuration *p_dev)
 		    ((uint8_t)bh_ptr->type < (uint8_t)0x0d)) {
 			if ((bh_ptr->idx >= (uint16_t)0x54d0) &&
 			    (bh_ptr->idx < (uint16_t)(0x54d0 + 960))) {
-				bh_ptr->size = resolution;
+				bh_ptr->size = p_dev->resolution;
 
 			} else {
-				bh_ptr->size = (uint16_t)((uint16_t)resolution *
+				bh_ptr->size = (uint16_t)((uint16_t)p_dev->resolution *
 							  (uint16_t)VL53L5CX_NB_TARGET_PER_ZONE);
 			}
 
@@ -1103,14 +1108,13 @@ uint8_t VL53L5CX::vl53l5cx_start_ranging(VL53L5CX_Configuration *p_dev)
 			  (uint8_t *)cmd, sizeof(cmd));
 	status |= vl53l5cx_poll_for_answer(p_dev, 4, 1, VL53L5CX_UI_CMD_STATUS, 0xff,
 					   0x03);
-
+	PX4_INFO("Status after poll: %d", status);
 	/* Read ui range data content and compare if data size is the correct one */
 	status |=
 		vl53l5cx_dci_read_data(p_dev, (uint8_t *)p_dev->temp_buffer, 0x5440, 12);
 	PX4_INFO("Temp buf data byte 1: %d", p_dev->temp_buffer[0x8]);
 	(void)memcpy(&tmp, &(p_dev->temp_buffer[0x8]), sizeof(tmp));
 	size_t tmp_buff_sz = sizeof(tmp);
-
 	size_t data_rd_sz = sizeof(p_dev->data_read_size);
 
 	if (tmp != p_dev->data_read_size) {
