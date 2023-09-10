@@ -42,6 +42,9 @@
 #define VL53L5CX_DELAY 10000 // us
 #define VL53L5CX_UNSHIFTED_I2C_ADDR 0x29
 
+
+
+
 VL53L5CX::VL53L5CX(const I2CSPIDriverConfig &config)
 	: I2C(config), I2CSPIDriver(config),
 	  _px4_rangefinder(get_device_id(), config.rotation)
@@ -55,10 +58,6 @@ VL53L5CX::VL53L5CX(const I2CSPIDriverConfig &config)
 
 	// Allow 3 retries as the device typically misses the first measure attempts.
 	I2C::_retries = 3;
-
-	// VL53L5CX_Configuration l5_config;
-	// VL53L5CX_ResultsData l5_results;
-
 
 	_px4_rangefinder.set_device_type(DRV_DIST_DEVTYPE_VL53L5CX);
 }
@@ -338,11 +337,12 @@ uint8_t VL53L5CX::WrMulti(VL53L5CX_Platform *p_platform, uint16_t RegisterAddres
 
 	/* Write the register address of the sensor and send data byte*/
 
-	mwrite_local[0] = (RegisterAddress >> 8) & 0xff;
+	mwrite_local[0] = RegisterAddress >> 8;
 	mwrite_local[1] = RegisterAddress & 0xff;
 	memcpy(&mwrite_local[2], p_values, size);
 
-	const unsigned i2c_buffer_size = sizeof(mwrite_local);
+	const unsigned i2c_buffer_size = size + 2;
+	// const unsigned i2c_buffer_size = sizeof(mwrite_local);
 	/* transfer all data bytes in the buffer to the sensor */
 	ret = transfer(&mwrite_local[0], i2c_buffer_size, nullptr, 0);
 
@@ -373,12 +373,13 @@ uint8_t VL53L5CX::RdMulti(VL53L5CX_Platform *p_platform, uint16_t RegisterAddres
 		return ret;
 	}
 
+	ret = transfer(nullptr, 0, &p_values[0], size);
 	/* Read the incoming buffer from the sensor */
-	for (uint32_t i = 0; i < size; ++i) {
-
-		ret = transfer(nullptr, 0, &p_values[i], 1);
-
-	}
+	// for (uint32_t i = 0; i < size; ++i) {
+	//
+	// 	ret = transfer(nullptr, 0, &p_values[i], (uint8_t)1);
+	//
+	// }
 
 	if (ret != PX4_OK) {
 		perf_count(_comms_errors);
@@ -446,17 +447,20 @@ uint8_t VL53L5CX::vl53l5cx_is_alive(VL53L5CX_Configuration *p_dev, uint8_t *p_is
 }
 
 uint8_t VL53L5CX::vl53l5cx_poll_for_answer(VL53L5CX_Configuration *p_dev,
-		uint8_t size, uint8_t pos,
+		uint32_t size, uint8_t pos,
 		uint16_t address, uint8_t mask,
 		uint8_t expected_value)
 {
 	uint8_t status = VL53L5CX_STATUS_OK;
 	uint8_t timeout = 0;
+	uint8_t result = 0;
 
 	do {
+		// This was a dumb mistake. Don't pass a uint8 into a uint32
 		status |= RdMulti(&(p_dev->platform), address, p_dev->temp_buffer, size);
 
-		WaitMs(&(p_dev->platform), 10);
+		result = p_dev->temp_buffer[pos] & mask;
+
 		/* Poll timeout for init fix */
 
 		if (timeout >= (uint8_t)200) { /* 2s timeout */
@@ -464,18 +468,24 @@ uint8_t VL53L5CX::vl53l5cx_poll_for_answer(VL53L5CX_Configuration *p_dev,
 			status |= p_dev->temp_buffer[2];
 			break;
 
-		} else if ((size >= (uint8_t)4) &&
-			   (p_dev->temp_buffer[2] >= (uint8_t)0x7f)) {
-
-			timeout++;
-			status |= VL53L5CX_MCU_ERROR;
-			break;
-
 		} else {
-			timeout++;
-		}
-	} while ((p_dev->temp_buffer[pos] & mask) != expected_value);
 
+
+			if ((size >= (uint32_t)4) &&
+			    (p_dev->temp_buffer[2] >= (uint8_t)0x7f)) {
+
+				timeout++;
+				status |= VL53L5CX_MCU_ERROR;
+				PX4_INFO("We got a poll error");
+				break;
+
+			} else {
+				timeout++;
+			}
+		}
+	} while (result != expected_value);
+
+	PX4_INFO("result: %d", result);
 	return status;
 }
 
@@ -530,7 +540,7 @@ uint8_t VL53L5CX::vl53l5cx_send_offset_data(VL53L5CX_Configuration *p_dev,
 	(void)memcpy(&(p_dev->temp_buffer[0x1E0]), footer, 8);
 	status |= WrMulti(&(p_dev->platform), 0x2e18, p_dev->temp_buffer,
 			  VL53L5CX_OFFSET_BUFFER_SIZE);
-	status |= vl53l5cx_poll_for_answer(p_dev, 4, 1, VL53L5CX_UI_CMD_STATUS, 0xff,
+	status |= vl53l5cx_poll_for_answer(p_dev, (uint32_t)4, 1, VL53L5CX_UI_CMD_STATUS, 0xff,
 					   0x03);
 
 	return status;
@@ -606,7 +616,7 @@ uint8_t VL53L5CX::vl53l5cx_send_xtalk_data(VL53L5CX_Configuration *p_dev,
 
 	status |= WrMulti(&(p_dev->platform), 0x2cf8, p_dev->temp_buffer,
 			  VL53L5CX_XTALK_BUFFER_SIZE);
-	status |= vl53l5cx_poll_for_answer(p_dev, 4, 1, VL53L5CX_UI_CMD_STATUS, 0xff,
+	status |= vl53l5cx_poll_for_answer(p_dev, (uint32_t)4, 1, VL53L5CX_UI_CMD_STATUS, 0xff,
 					   0x03);
 
 	return status;
@@ -638,7 +648,7 @@ uint8_t VL53L5CX::vl53l5cx_dci_read_data(VL53L5CX_Configuration *p_dev, uint8_t 
 		/* Request data reading from FW */
 		status |= WrMulti(&(p_dev->platform), (VL53L5CX_UI_CMD_END - (uint16_t)11),
 				  cmd, sizeof(cmd));
-		status |= vl53l5cx_poll_for_answer(p_dev, 4, 1, VL53L5CX_UI_CMD_STATUS,
+		status |= vl53l5cx_poll_for_answer(p_dev, (uint32_t)4, 1, VL53L5CX_UI_CMD_STATUS,
 						   0xff, 0x03);
 		//TODO: debug why temp_buffer has no data
 		/* Read new data sent (4 bytes header + data_size + 8 bytes footer) */
@@ -701,7 +711,7 @@ uint8_t VL53L5CX::vl53l5cx_dci_write_data(VL53L5CX_Configuration *p_dev, uint8_t
 		/* Send data to FW */
 		status |= WrMulti(&(p_dev->platform), address, p_dev->temp_buffer,
 				  (uint32_t)((uint32_t)data_size + (uint32_t)12));
-		status |= vl53l5cx_poll_for_answer(p_dev, 4, 1, VL53L5CX_UI_CMD_STATUS,
+		status |= vl53l5cx_poll_for_answer(p_dev, (uint32_t)4, 1, VL53L5CX_UI_CMD_STATUS,
 						   0xff, 0x03);
 
 		SwapBuffer(data, data_size);
@@ -809,7 +819,6 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 	status |= RdByte(&(p_dev->platform), 0x7FFF, &tmp);
 	status |= WrByte(&(p_dev->platform), 0x000C, 0x01);
 
-
 	status |= WrByte(&(p_dev->platform), 0x0101, 0x00);
 	status |= WrByte(&(p_dev->platform), 0x0102, 0x00);
 	status |= WrByte(&(p_dev->platform), 0x010A, 0x01);
@@ -827,7 +836,7 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 
 	/* Wait for sensor booted (several ms required to get sensor ready ) */
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x00);
-	status |= vl53l5cx_poll_for_answer(p_dev, 1, 0, 0x06, 0xff, 1);
+	status |= vl53l5cx_poll_for_answer(p_dev, (uint32_t)1, 0, 0x06, 0xff, 1);
 
 	if (status != (uint8_t)0) {
 		return PX4_ERROR;
@@ -839,7 +848,7 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 	/* Enable FW access */
 	status |= WrByte(&(p_dev->platform), 0x03, 0x0D);
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x01);
-	status |= vl53l5cx_poll_for_answer(p_dev, 1, 0, 0x21, 0x10, 0x10);
+	status |= vl53l5cx_poll_for_answer(p_dev, (uint32_t)1, 0, 0x21, 0x10, 0x10);
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x00);
 
 	/* Enable host access to GO1 */
@@ -874,34 +883,38 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 	/* Download FW into VL53L5 */
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x09);
 	WaitMs(&(p_dev->platform), 10);
-	uint8_t fw_addr = 0x0;
 
-	for (uint8_t i = 0; i < 80; ++i) {
+	//firmware address is a HUGE number, so uint32
+	uint32_t fw_addr = 0x0;
 
-		status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x100);
-		WaitMs(&(p_dev->platform), 10);
-		fw_addr += 0x100;
+	// Break out the large tx: 32kb
+	for (uint16_t i = 0; i < 256; ++i) {
+
+		status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x80);
+		WaitMs(&(p_dev->platform), 5);
+		fw_addr += 0x80;
 
 	}
 
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x0a);
 
-	for (uint8_t i = 0; i < 80; ++i) {
+	// Break out the large tx: 32kb
+	for (uint16_t i = 0; i < 256; ++i) {
 
-		status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x100);
-		WaitMs(&(p_dev->platform), 10);
-		fw_addr += 0x100;
+		status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x80);
+		WaitMs(&(p_dev->platform), 5);
+		fw_addr += 0x80;
 
 	}
 
-
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x0b);
 
-	for (uint8_t i = 0; i < 50; ++i) {
+	// Break out the large tx: 20kb
+	for (uint16_t i = 0; i < 160; ++i) {
 
-		status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x100);
-		WaitMs(&(p_dev->platform), 10);
-		fw_addr += 0x100;
+		status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x80);
+		WaitMs(&(p_dev->platform), 5);
+		fw_addr += 0x80;
 
 	}
 
@@ -910,7 +923,7 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x02);
 	status |= WrByte(&(p_dev->platform), 0x03, 0x0D);
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x01);
-	status |= vl53l5cx_poll_for_answer(p_dev, 1, 0, 0x21, 0x10, 0x10);
+	status |= vl53l5cx_poll_for_answer(p_dev, (uint32_t)1, 0, 0x21, 0x10, 0x10);
 
 	if (status != (uint8_t)0) {
 
@@ -940,18 +953,17 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 		return PX4_ERROR;
 	}
 
+	WaitMs(&(p_dev->platform), 10);
+
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x02);
 
 	/* Get offset NVM data and store them into the offset buffer */
 	status |= WrMulti(&(p_dev->platform), 0x2fd8, (uint8_t *)VL53L5CX_GET_NVM_CMD,
 			  sizeof(VL53L5CX_GET_NVM_CMD));
-// Changed to 20, was 10
-	WaitMs(&(p_dev->platform), 20);
 
+	WaitMs(&(p_dev->platform), 100);
 
-	/* poll fails and subsequent polls also fail, see fix in function */
-
-	status |= vl53l5cx_poll_for_answer(p_dev, 4, 0, VL53L5CX_UI_CMD_STATUS, 0xff, 2);
+	status |= vl53l5cx_poll_for_answer(p_dev, (uint32_t)4, 0, VL53L5CX_UI_CMD_STATUS, 0xff, (uint8_t)4);
 
 	status |= RdMulti(&(p_dev->platform), VL53L5CX_UI_CMD_START,
 			  p_dev->temp_buffer, VL53L5CX_NVM_DATA_SIZE);

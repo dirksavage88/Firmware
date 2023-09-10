@@ -32,7 +32,7 @@
  ****************************************************************************/
 
 #pragma once
-
+#include <stdint.h>
 namespace PixArt_PAA3905
 {
 // TODO: move to a central header

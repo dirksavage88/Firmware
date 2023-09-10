@@ -38,8 +38,8 @@
 constexpr px4_spi_bus_t px4_spi_buses[SPI_BUS_MAX_BUS_ITEMS] = {
 	initSPIBus(1,
 	{
-		// initSPIDevice(DRV_FLOW_DEVTYPE_PMW3901, 0), // spidev1.0
-		initSPIDevice(DRV_FLOW_DEVTYPE_PMW3901, 0),
+		initSPIDevice(DRV_FLOW_DEVTYPE_PAA3905, 0), // spidev1.0
+		// initSPIDevice(DRV_FLOW_DEVTYPE_PMW3901, 0),
 		initSPIDevice(DRV_IMU_DEVTYPE_MPU9250, 1) // spidev1.1
 	}),
 

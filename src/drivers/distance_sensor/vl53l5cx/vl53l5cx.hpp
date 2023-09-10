@@ -332,7 +332,6 @@ public:
 	 */
 	void RunImpl();
 
-
 	VL53L5CX_Configuration l5_config;
 	VL53L5CX_ResultsData l5_results;
 
@@ -391,7 +390,7 @@ private:
 					  uint16_t new_data_pos);
 
 	uint8_t vl53l5cx_poll_for_answer(VL53L5CX_Configuration *p_dev,
-					 uint8_t size, uint8_t pos,
+					 uint32_t size, uint8_t pos,
 					 uint16_t address, uint8_t mask,
 					 uint8_t expected_value);
 	uint8_t vl53l5cx_send_xtalk_data(VL53L5CX_Configuration *p_dev,
