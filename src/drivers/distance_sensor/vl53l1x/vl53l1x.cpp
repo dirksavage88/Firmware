@@ -174,7 +174,7 @@ VL53L1X::VL53L1X(const I2CSPIDriverConfig &config) :
 	_px4_rangefinder(get_device_id(), config.rotation)
 {
 	// Set distance mode (1 for ~2m ranging, 2 for ~4m ranging
-	_distance_mode = VL53L1X_LONG_RANGE;
+	_distance_mode = VL53L1X_SHORT_RANGE;
 	// VL53L1X typical range 0-4 meters with 27 degree field of view
 	_px4_rangefinder.set_min_distance(0.f);
 
@@ -218,33 +218,57 @@ int VL53L1X::collect()
 	ret = VL53L1X_GetRangeStatus(&rangeStatus);
 
 	switch (rangeStatus) {
-	case VL53L1X_RANGE_STATUS_OUT_OF_BOUNDS:
-		perf_count(_comms_errors);
-		perf_end(_sample_perf);
-		return PX4_ERROR;
+	case VL53L1X_RANGE_STATUS_OUT_OF_BOUNDS: {
+			perf_count(_comms_errors);
+			perf_end(_sample_perf);
+			distance_mm = 0;
+			_range_quality = 0;
+			break;
+		}
 
-	case VL53L1X_SIGMA_FAIL:
-		perf_count(_comms_errors);
-		perf_end(_sample_perf);
-		return PX4_ERROR;
+	// sigma limit check fail: ambient light too strong
+	case VL53L1X_SIGMA_FAIL: {
+			perf_count(_comms_errors);
+			perf_end(_sample_perf);
+			distance_mm = 0;
+			_range_quality = 0;
+			break;
+		}
 
-	case VL53L1X_SIGNAL_FAIL:
-		perf_count(_comms_errors);
-		perf_end(_sample_perf);
-		return PX4_ERROR;
+	// signal fail: no target, low confidence of return signal
+	case VL53L1X_SIGNAL_FAIL: {
+			perf_count(_comms_errors);
+			perf_end(_sample_perf);
+			distance_mm = 0;
+			_range_quality = 0;
+			break;
+		}
 
-	case VL53L1X_RANGE_STATUS_OK: // Assume rangestatus okay
-		ret = VL53L1X_GetDistance(&distance_mm);
-		ret |= VL53L1X_ClearInterrupt();
-		float distance_m = distance_mm / 1000.f;
-		_px4_rangefinder.update(timestamp_sample, distance_m);
-	}
+	case VL53L1X_RANGE_STATUS_OK: {
+			ret = VL53L1X_GetDistance(&distance_mm);
+			ret |= VL53L1X_ClearInterrupt();
+			_range_quality = 100;
+			break;
+		}
+
+	default: {
+			ret = VL53L1X_GetDistance(&distance_mm);
+			ret |= VL53L1X_ClearInterrupt();
+			// Degraded quality but signal and sigma OKAY
+			_range_quality = 25;
+			break;
+		}
+	} // End switch case
 
 	if (ret != PX4_OK) {
 		perf_count(_comms_errors);
 		perf_end(_sample_perf);
 		return PX4_ERROR;
 	}
+
+	// Convert distance to mm from m
+	float distance_m = distance_mm / 1000.f;
+	_px4_rangefinder.update(timestamp_sample, distance_m, _range_quality);
 
 	perf_end(_sample_perf);
 
