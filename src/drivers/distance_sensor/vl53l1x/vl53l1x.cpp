@@ -42,6 +42,8 @@
 #define VL53L1X_INTER_MEAS_MS				           200 // ms
 #define VL53L1X_SHORT_RANGE			            1  // sub-2 meter distance mode
 #define VL53L1X_LONG_RANGE			            2  // sub-4 meter distance mode
+#define VL53L1X_SIGMA_FAIL                  1 // Sigma fail
+#define VL53L1X_SIGNAL_FAIL                  2 // Signal fail (high ambient light)
 #define VL53L1X_RANGE_STATUS_OUT_OF_BOUNDS     13 // region of interest out of bounds error
 #define VL53L1X_RANGE_STATUS_OK                 0 // range status ok
 #define VL53L1X_ROI_FAR_RIGHT                 247 // ROI far right of optical center
@@ -215,14 +217,28 @@ int VL53L1X::collect()
 
 	ret = VL53L1X_GetRangeStatus(&rangeStatus);
 
-	if ((ret != PX4_OK) | (rangeStatus == VL53L1X_RANGE_STATUS_OUT_OF_BOUNDS)) {
+	switch (rangeStatus) {
+	case VL53L1X_RANGE_STATUS_OUT_OF_BOUNDS:
 		perf_count(_comms_errors);
 		perf_end(_sample_perf);
 		return PX4_ERROR;
-	}
 
-	ret = VL53L1X_GetDistance(&distance_mm);
-	ret |= VL53L1X_ClearInterrupt();
+	case VL53L1X_SIGMA_FAIL:
+		perf_count(_comms_errors);
+		perf_end(_sample_perf);
+		return PX4_ERROR;
+
+	case VL53L1X_SIGNAL_FAIL:
+		perf_count(_comms_errors);
+		perf_end(_sample_perf);
+		return PX4_ERROR;
+
+	case VL53L1X_RANGE_STATUS_OK: // Assume rangestatus okay
+		ret = VL53L1X_GetDistance(&distance_mm);
+		ret |= VL53L1X_ClearInterrupt();
+		float distance_m = distance_mm / 1000.f;
+		_px4_rangefinder.update(timestamp_sample, distance_m);
+	}
 
 	if (ret != PX4_OK) {
 		perf_count(_comms_errors);
@@ -231,10 +247,6 @@ int VL53L1X::collect()
 	}
 
 	perf_end(_sample_perf);
-
-	float distance_m = distance_mm / 1000.f;
-
-	_px4_rangefinder.update(timestamp_sample, distance_m);
 
 	return PX4_OK;
 }
