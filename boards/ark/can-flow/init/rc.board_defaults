@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+# board specific defaults
+#------------------------------------------------------------------------------
+
+param set-default SENS_PAW3902_ORIENT 0
+param set-default SENS_PAA3905_ORIENT 0

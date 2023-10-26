@@ -138,7 +138,7 @@ private:
 	int _low_to_superlow_counter{0};
 	int _low_to_bright_counter{0};
 	int _superlow_to_low_counter{0};
-  int32_t _orientation{0};
+	int32_t _orientation{1};
 
 	hrt_abstime _last_write_time{0};
 	hrt_abstime _last_read_time{0};

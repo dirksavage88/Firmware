@@ -125,7 +125,7 @@ private:
 
 	int _failure_count{0};
 	int _discard_reading{0};
-  int32_t _orientation{0};
+	int32_t _orientation{1};
 
 	px4::atomic<hrt_abstime> _drdy_timestamp_sample{0};
 	bool _motion_interrupt_enabled{false};

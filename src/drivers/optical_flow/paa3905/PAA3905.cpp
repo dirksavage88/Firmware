@@ -32,6 +32,7 @@
  ****************************************************************************/
 
 #include "PAA3905.hpp"
+#define PIXEL_FLOW_SIGN -1.0f
 
 static constexpr int16_t combine(uint8_t msb, uint8_t lsb)
 {
@@ -419,14 +420,14 @@ void PAA3905::RunImpl()
 						// CPI/m -> radians
 						static constexpr float SCALE = 1.f / (PIXART_RESOLUTION * INCHES_PER_METER);
 
+						sensor_optical_flow.pixel_flow[0] = pixel_flow_rotated(0) * SCALE;
+
 						// Condition based on orientation
-						if (_orientation == 0) {
-							sensor_optical_flow.pixel_flow[0] = pixel_flow_rotated(0) * SCALE;
-							sensor_optical_flow.pixel_flow[1] = pixel_flow_rotated(1) * SCALE;
+						if (_orientation == 1) {
+							sensor_optical_flow.pixel_flow[1] = pixel_flow_rotated(1) * SCALE * PIXEL_FLOW_SIGN;
 
 						} else {
-							sensor_optical_flow.pixel_flow[0] = pixel_flow_rotated(1) * SCALE;
-							sensor_optical_flow.pixel_flow[1] = pixel_flow_rotated(0) * SCALE;
+							sensor_optical_flow.pixel_flow[1] = pixel_flow_rotated(1) * SCALE;
 						}
 
 						sensor_optical_flow.quality = buffer.data.SQUAL;
