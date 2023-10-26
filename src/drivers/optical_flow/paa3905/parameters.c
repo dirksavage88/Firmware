@@ -40,3 +40,13 @@
  * @group Sensors
  */
 PARAM_DEFINE_INT32(SENS_EN_PAA3905, 0);
+/**
+ *PAA3905 Orientation
+ * @reboot_required true
+ * @min 0
+ * @max 1
+ * @value 0 Downward
+ * @value 1 Upward
+ * @group Sensors
+ */
+PARAM_DEFINTE_INT32(SENS_PAA3905_ORIENT, 0);

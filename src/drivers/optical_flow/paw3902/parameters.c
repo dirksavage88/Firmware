@@ -40,3 +40,13 @@
  * @group Sensors
  */
 PARAM_DEFINE_INT32(SENS_EN_PAW3902, 0);
+/**
+ *PAW3902 Orientation
+ * @reboot_required true
+ * @min 0
+ * @max 1
+ * @value 0 Downward
+ * @value 1 Upward
+ * @group Sensors
+ */
+PARAM_DEFINTE_INT32(SENS_PAW3902_ORIENT, 0);

@@ -58,6 +58,10 @@ PAW3902::PAW3902(const I2CSPIDriverConfig &config) :
 	} else {
 		_rotation.identity();
 	}
+
+	// Determine if the optical flow sensor is pointing down (default) vs pointing at ceiling
+	param_get(param_find("SENS_PAW3902_ORIENT"), &_orientation);
+
 }
 
 PAW3902::~PAW3902()
@@ -418,8 +422,15 @@ void PAW3902::RunImpl()
 						// CPI/m -> radians
 						static constexpr float SCALE = 1.f / (PIXART_RESOLUTION * INCHES_PER_METER);
 
-						sensor_optical_flow.pixel_flow[0] = pixel_flow_rotated(0) * SCALE;
-						sensor_optical_flow.pixel_flow[1] = pixel_flow_rotated(1) * SCALE;
+						// Condition based on orientation
+						if (_orientation == 0) {
+							sensor_optical_flow.pixel_flow[0] = pixel_flow_rotated(0) * SCALE;
+							sensor_optical_flow.pixel_flow[1] = pixel_flow_rotated(1) * SCALE;
+
+						} else {
+							sensor_optical_flow.pixel_flow[0] = pixel_flow_rotated(1) * SCALE;
+							sensor_optical_flow.pixel_flow[1] = pixel_flow_rotated(0) * SCALE;
+						}
 
 						sensor_optical_flow.quality = buffer.data.SQUAL;
 

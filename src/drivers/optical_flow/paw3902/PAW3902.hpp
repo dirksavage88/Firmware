@@ -49,6 +49,7 @@
 #include <px4_platform_common/i2c_spi_buses.h>
 #include <uORB/PublicationMulti.hpp>
 #include <uORB/topics/sensor_optical_flow.h>
+#include <lib/parameters/param.h>
 
 using namespace time_literals;
 using namespace PixArt_PAW3902;
@@ -137,6 +138,7 @@ private:
 	int _low_to_superlow_counter{0};
 	int _low_to_bright_counter{0};
 	int _superlow_to_low_counter{0};
+  int32_t _orientation{0};
 
 	hrt_abstime _last_write_time{0};
 	hrt_abstime _last_read_time{0};
