@@ -671,54 +671,16 @@ void GZBridge::odometryCallback(const gz::msgs::OdometryWithCovariance &odometry
 
 	pthread_mutex_unlock(&_node_mutex);
 }
-// # Single scan from a planar laser range-finder
-// #
-// # If you have another ranging device with different behavior (e.g. a sonar
-// # array), please find or create a different message, since applications
-// # will make fairly laser-specific assumptions about this data
-
-// Header header            # timestamp in the header is the acquisition time of
-//                          # the first ray in the scan.
-//                          #
-//                          # in frame frame_id, angles are measured around
-//                          # the positive Z axis (counterclockwise, if Z is up)
-//                          # with zero angle being forward along the x axis
-
-// float32 angle_min        # start angle of the scan [rad]
-// float32 angle_max        # end angle of the scan [rad]
-// float32 angle_increment  # angular distance between measurements [rad]
-
-// float32 time_increment   # time between measurements [seconds] - if your scanner
-//                          # is moving, this will be used in interpolating position
-//                          # of 3d points
-// float32 scan_time        # time between scans [seconds]
-
-// float32 range_min        # minimum range value [m]
-// float32 range_max        # maximum range value [m]
-
-// float32[] ranges         # range data [m] (Note: values < range_min or > range_max should be discarded)
-// float32[] intensities    # intensity data [device-specific units].  If your
-//                          # device does not provide intensities, please leave
-//                          # the array empty.
 
 void GZBridge::laserScanCallback(const gz::msgs::LaserScan &scan)
 {
 	static constexpr int SECTOR_SIZE_DEG = 10; // PX4 Collision Prevention only has 36 sectors of 10 degrees each
 
-	// double angle_max_deg = scan.angle_max() * 180 / M_PI;
 	double angle_min_deg = scan.angle_min() * 180 / M_PI;
 	double angle_step_deg = scan.angle_step() * 180 / M_PI;
 
-	// PX4_INFO("angle_max_deg: %f", angle_max_deg);
-	// PX4_INFO("angle_min_deg: %f", angle_min_deg);
-	// PX4_INFO("angle_step_deg: %f", angle_step_deg);
-	// PX4_INFO("ranges_size(): %u", scan.ranges_size());
-
 	int samples_per_sector = std::round(SECTOR_SIZE_DEG / angle_step_deg);
 	int number_of_sectors = scan.ranges_size() / samples_per_sector;
-
-	// PX4_INFO("samples_per_sector: %u", samples_per_sector);
-	// PX4_INFO("number_of_sectors: %u", number_of_sectors);
 
 	std::vector<double> ds_array(number_of_sectors, UINT16_MAX);
 
@@ -728,6 +690,7 @@ void GZBridge::laserScanCallback(const gz::msgs::LaserScan &scan)
 		double sum = 0;
 
 		int samples_used_in_sector = 0;
+
 		for (int j = 0; j < samples_per_sector; j++) {
 
 			double distance = scan.ranges()[i * samples_per_sector + j];
@@ -754,7 +717,7 @@ void GZBridge::laserScanCallback(const gz::msgs::LaserScan &scan)
 	obstacle_distance_s obs {};
 
 	// Initialize unknown
-	for (auto& i : obs.distances) {
+	for (auto &i : obs.distances) {
 		i = UINT16_MAX;
 	}
 
@@ -768,7 +731,8 @@ void GZBridge::laserScanCallback(const gz::msgs::LaserScan &scan)
 
 	// Map samples in FOV into sectors in ObstacleDistance
 	int index = 0;
-	for (std::vector<double>::reverse_iterator i = ds_array.rbegin(); i != ds_array.rend(); ++i ) {
+
+	for (std::vector<double>::reverse_iterator i = ds_array.rbegin(); i != ds_array.rend(); ++i) {
 
 		double d = *i;
 		uint16_t distance_cm = d * 100.;
