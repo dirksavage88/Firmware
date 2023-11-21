@@ -187,7 +187,7 @@ private:
   /**
    * Adapt the yaw setpoint
    */
-  void _adaptYawDirection(matrix::Vector2f &setpoint_dir, int &setpoint_index, float vehicle_yaw_angle_rad);
+  void _adaptMoveDirection(matrix::Vector2f &setpoint_dir, int &setpoint_index, float vehicle_yaw_angle_rad);
 	/**
 	 * Publishes vehicle command.
 	 */
