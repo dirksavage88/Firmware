@@ -695,8 +695,8 @@ void GZBridge::laserScanCallback(const gz::msgs::LaserScan &scan)
 
 			double distance = scan.ranges()[i * samples_per_sector + j];
 
-			// Don't include nan or inf values
-			if (isnan(distance) || isinf(distance)) {
+			// inf values mean no object
+			if (isinf(distance)) {
 				continue;
 			}
 
@@ -704,9 +704,9 @@ void GZBridge::laserScanCallback(const gz::msgs::LaserScan &scan)
 			samples_used_in_sector++;
 		}
 
-		// If no valid samples mark unknown
+		// If all samples in a sector are inf then it means the sector is clear
 		if (samples_used_in_sector == 0) {
-			ds_array[i] = UINT16_MAX;
+			ds_array[i] = scan.range_max();
 
 		} else {
 			ds_array[i] = sum / samples_used_in_sector;
@@ -732,12 +732,12 @@ void GZBridge::laserScanCallback(const gz::msgs::LaserScan &scan)
 	// Map samples in FOV into sectors in ObstacleDistance
 	int index = 0;
 
+	// Iterate in reverse because array is FLU and we need FRD
 	for (std::vector<double>::reverse_iterator i = ds_array.rbegin(); i != ds_array.rend(); ++i) {
 
-		double d = *i;
-		uint16_t distance_cm = d * 100.;
+		uint16_t distance_cm = (*i) * 100.;
 
-		if (distance_cm > obs.max_distance) {
+		if (distance_cm >= obs.max_distance) {
 			obs.distances[index] = obs.max_distance + 1;
 
 		} else if (distance_cm < obs.min_distance) {
