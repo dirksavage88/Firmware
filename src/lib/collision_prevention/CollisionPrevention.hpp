@@ -42,6 +42,7 @@
 #pragma once
 
 #include <float.h>
+#include <vector>
 
 #include <commander/px4_custom_mode.h>
 #include <drivers/drv_hrt.h>
@@ -58,7 +59,8 @@
 #include <uORB/topics/obstacle_distance.h>
 #include <uORB/topics/vehicle_attitude.h>
 #include <uORB/topics/vehicle_command.h>
-
+#include <uORB/topics/trajectory_setpoint.h>
+#define MAX_OBSTACLE_MSG_BINS 72
 using namespace time_literals;
 
 class CollisionPrevention : public ModuleParams
@@ -89,6 +91,7 @@ protected:
 	uint64_t _data_timestamps[sizeof(_obstacle_map_body_frame.distances) / sizeof(_obstacle_map_body_frame.distances[0])];
 	uint16_t _data_maxranges[sizeof(_obstacle_map_body_frame.distances) / sizeof(
 										    _obstacle_map_body_frame.distances[0])]; /**< in cm */
+  trajectory_setpoint_s _trajectory_set {};
 
 	void _addDistanceSensorData(distance_sensor_s &distance_sensor, const matrix::Quatf &vehicle_attitude);
 
@@ -126,10 +129,14 @@ private:
 	bool _was_active{false};		/**< states if the collision prevention interferes with the user input */
 
 	orb_advert_t _mavlink_log_pub{nullptr};	 	/**< Mavlink log uORB handle */
+ 
+  // std::vector<uint16_t>::iterator _best_distance_bin;
+  // std::vector<uint16_t> _histogram_maxd(short unsigned int *arr_begin, uint16_t *arr_end);
 
 	uORB::Publication<collision_constraints_s>	_constraints_pub{ORB_ID(collision_constraints)};		/**< constraints publication */
 	uORB::Publication<obstacle_distance_s>		_obstacle_distance_pub{ORB_ID(obstacle_distance_fused)};	/**< obstacle_distance publication */
 	uORB::Publication<vehicle_command_s>	_vehicle_command_pub{ORB_ID(vehicle_command)};			/**< vehicle command do publication */
+  uORB::Publication<trajectory_setpoint_s> _trajectory_setpoint_pub{ORB_ID(trajectory_setpoint)};
 
 	uORB::SubscriptionData<obstacle_distance_s> _sub_obstacle_distance{ORB_ID(obstacle_distance)}; /**< obstacle distances received form a range sensor */
 	uORB::SubscriptionData<vehicle_attitude_s> _sub_vehicle_attitude{ORB_ID(vehicle_attitude)};
@@ -168,13 +175,6 @@ private:
 					   const matrix::Vector2f &curr_vel);
 
 	/**
-	 * Publishes collision_constraints message
-	 * @param original_setpoint, setpoint before collision prevention intervention
-	 * @param adapted_setpoint, collision prevention adaped setpoint
-	 */
-	void _publishConstrainedSetpoint(const matrix::Vector2f &original_setpoint, const matrix::Vector2f &adapted_setpoint);
-
-	/**
 	 * Publishes obstacle_distance message with fused data from offboard and from distance sensors
 	 * @param obstacle, obstacle_distance message to be publsihed
 	 */
@@ -184,7 +184,10 @@ private:
 	 * Aggregates the sensor data into a internal obstacle map in body frame
 	 */
 	void _updateObstacleMap();
-
+  /**
+   * Adapt the yaw setpoint
+   */
+  void _adaptYawDirection(matrix::Vector2f &setpoint_dir, int &setpoint_index, float vehicle_yaw_angle_rad);
 	/**
 	 * Publishes vehicle command.
 	 */

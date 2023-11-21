@@ -39,6 +39,7 @@
 
 #include "CollisionPrevention.hpp"
 #include <px4_platform_common/events.h>
+#include <algorithm>
 
 using namespace matrix;
 using namespace time_literals;
@@ -290,7 +291,61 @@ CollisionPrevention::_addDistanceSensorData(distance_sensor_s &distance_sensor, 
 		}
 	}
 }
+void CollisionPrevention::_adaptMoveDirection(Vector2f &setpoint_dir, int &setpoint_index, float vehicle_yaw_angle_rad)
+{
+	const float col_prev_d = _param_cp_dist.get();
+	// Guidance bins are a set of bins we can use to adjust Yaw setpoints based on guide angle
+	const int guidance_bins = floor(_param_cp_guide_ang.get() / INTERNAL_MAP_INCREMENT_DEG);
+	// Create a local copy of setpoint index 
+	const int sp_index_original = setpoint_index;
+	uint16_t new_sp_index = setpoint_index;
+	// Get the bin where the max histogram element value is stored
+	uint16_t best_hist_element = 0;
+	int8_t scale_factor = 0.5;
+	int collision_buffer = 4;
+  // Init the vector with the obstacle map array
+  std::vector<uint16_t>::iterator best_distance_bin;
 
+	std::vector<uint16_t> _histogram_maxd (std::begin(_obstacle_map_body_frame.distances), std::end(_obstacle_map_body_frame.distances));
+	
+	for (int i = sp_index_original - guidance_bins; i <= sp_index_original + guidance_bins; i++) {
+	  // filter to the distance array to be able to center in larger gaps
+	 	const int filter_size = 0;
+
+		for (int j = i - filter_size; j <= i + filter_size; j++) {
+			int bin = wrap_bin(j);
+      // TODO: change to switch case
+			if (_obstacle_map_body_frame.distances[bin] == UINT16_MAX) {
+      // If we are approaching an obstacle very closely or not receiving obstacle distance data, don't incentivize histogram results
+				_histogram_maxd[bin] += floor(_obstacle_map_body_frame.distances[bin] * scale_factor * -1); //todo: figure out how to penalize
+			} //End if 
+			else {
+		  // We are receiving valid range data in the current bin; add to the histogram	
+				_histogram_maxd[bin] += _obstacle_map_body_frame.distances[bin] * scale_factor;
+			}  // End else
+		}  // End for
+		const int bin = wrap_bin(i);	
+		// Remove UINT16_MAX from the vector
+		_histogram_maxd.erase(std::remove(_histogram_maxd.begin(), _histogram_maxd.end(), 65535), _histogram_maxd.end());
+		// Calculate the largest value in the histogram and return that val
+		best_distance_bin = std::max_element(_histogram_maxd.begin(), _histogram_maxd.end());
+		// Calculate which bin the max element value was stored in 
+	  best_hist_element = std::distance(_histogram_maxd.begin(), best_distance_bin);
+
+		if (_obstacle_map_body_frame.distances[bin] < collision_buffer * col_prev_d && _obstacle_map_body_frame.distances[bin] != UINT16_MAX) {
+			  new_sp_index = best_hist_element;
+		}
+	} // End for	
+		//only change setpoint direction if it was moved to a different bin
+		if (new_sp_index != setpoint_index) {
+			float rads = math::radians((float)new_sp_index * INTERNAL_MAP_INCREMENT_DEG + _obstacle_map_body_frame.angle_offset);
+			float angle = wrap_2pi(vehicle_yaw_angle_rad + rads);
+			setpoint_dir = {cosf(angle), sinf(angle)};
+			// float sp_yaw = wrap_pi(best_hist_element);
+			setpoint_index = new_sp_index;
+		}
+
+}
 void
 CollisionPrevention::_adaptSetpointDirection(Vector2f &setpoint_dir, int &setpoint_index, float vehicle_yaw_angle_rad)
 {
@@ -321,7 +376,6 @@ CollisionPrevention::_adaptSetpointDirection(Vector2f &setpoint_dir, int &setpoi
 		mean_dist = mean_dist / (2.f * filter_size + 1.f);
 		const float deviation_cost = col_prev_d * 50.f * abs(i - sp_index_original);
 		const float bin_cost = deviation_cost - mean_dist - _obstacle_map_body_frame.distances[bin];
-
 		if (bin_cost < best_cost && _obstacle_map_body_frame.distances[bin] != UINT16_MAX) {
 			best_cost = bin_cost;
 			new_sp_index = bin;
@@ -414,11 +468,12 @@ CollisionPrevention::_calculateConstrainedSetpoint(Vector2f &setpoint, const Vec
 			const float sp_angle_body_frame = atan2f(setpoint_dir(1), setpoint_dir(0)) - vehicle_yaw_angle_rad;
 			const float sp_angle_with_offset_deg = wrap_360(math::degrees(sp_angle_body_frame) -
 							       _obstacle_map_body_frame.angle_offset);
+			// We pass sp_index as setpoint_index to adaptsetpoint: setpoint is a vector
 			int sp_index = floor(sp_angle_with_offset_deg / INTERNAL_MAP_INCREMENT_DEG);
 
 			// change setpoint direction slightly (max by _param_cp_guide_ang degrees) to help guide through narrow gaps
-			_adaptSetpointDirection(setpoint_dir, sp_index, vehicle_yaw_angle_rad);
-
+			// _adaptSetpointDirection(setpoint_dir, sp_index, vehicle_yaw_angle_rad);
+      _adaptMoveDirection(setpoint_dir, sp_index, vehicle_yaw_angle_rad);
 			// limit speed for safe flight
 			for (int i = 0; i < INTERNAL_MAP_USED_BINS; i++) { // disregard unused bins at the end of the message
 
@@ -430,6 +485,7 @@ CollisionPrevention::_calculateConstrainedSetpoint(Vector2f &setpoint, const Vec
 				}
 
 				const float distance = _obstacle_map_body_frame.distances[i] * 0.01f; // convert to meters
+
 				const float max_range = _data_maxranges[i] * 0.01f; // convert to meters
 				float angle = math::radians((float)i * INTERNAL_MAP_INCREMENT_DEG + _obstacle_map_body_frame.angle_offset);
 
@@ -475,7 +531,7 @@ CollisionPrevention::_calculateConstrainedSetpoint(Vector2f &setpoint, const Vec
 
 				} else if (_obstacle_map_body_frame.distances[i] == UINT16_MAX && i == sp_index) {
 					if (!move_no_data || (move_no_data && _data_fov[i])) {
-						vel_max = 0.f;
+						vel_max = 0.5f;
 					}
 				}
 			}
@@ -531,6 +587,9 @@ CollisionPrevention::modifySetpoint(Vector2f &original_setpoint, const float max
 	new_setpoint.copyTo(constraints.adapted_setpoint);
 	_constraints_pub.publish(constraints);
 
+
+  // Note that the setpoint maps all the way back to flight task manual pos. control which maps to 
+  // _sticks.getPitchRollExpo()
 	original_setpoint = new_setpoint;
 }
 
