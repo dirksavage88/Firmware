@@ -732,19 +732,22 @@ void GZBridge::laserScanCallback(const gz::msgs::LaserScan &scan)
 	// Map samples in FOV into sectors in ObstacleDistance
 	int index = 0;
 
+	//Account for coverage missing in the 270 FOV 
+	int index_offset = 9;
+
 	// Iterate in reverse because array is FLU and we need FRD
 	for (std::vector<double>::reverse_iterator i = ds_array.rbegin(); i != ds_array.rend(); ++i) {
 
 		uint16_t distance_cm = (*i) * 100.;
 
 		if (distance_cm >= obs.max_distance) {
-			obs.distances[index] = obs.max_distance + 1;
+			obs.distances[index + index_offset] = obs.max_distance + 1;
 
 		} else if (distance_cm < obs.min_distance) {
-			obs.distances[index] = 0;
+			obs.distances[index + index_offset] = 0;
 
 		} else {
-			obs.distances[index] = distance_cm;
+			obs.distances[index + index_offset] = distance_cm;
 		}
 
 		index++;
