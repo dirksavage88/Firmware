@@ -1,0 +1,2 @@
+
+#define DRV_DIST_DEVTYPE_VL53L5CX 0xB2
