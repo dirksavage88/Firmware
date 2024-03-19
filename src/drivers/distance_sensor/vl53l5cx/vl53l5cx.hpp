@@ -37,6 +37,9 @@
  *
  * Driver for the ST VL53L5CX ToF Sensor connected via I2C.
  */
+#if defined (__ARMCC_VERSION) & (__ARMCC_VERSION < 6010050)
+#pgrama anon_unions
+#endif
 
 #pragma once
 
@@ -203,11 +206,11 @@
  * the output configuration.
  */
 
-// #if VL53L5CX_MAX_RESULTS_SIZE < 256U
-#define VL53L5CX_TEMPORARY_BUFFER_SIZE ((uint32_t)512U)
-// #else
-// #define VL53L5CX_TEMPORARY_BUFFER_SIZE ((uint32_t)VL53L5CX_MAX_RESULTS_SIZE)
-// #endif
+#if VL53L5CX_MAX_RESULTS_SIZE < 1024U
+#define VL53L5CX_TEMPORARY_BUFFER_SIZE ((uint32_t)1024U)
+#else
+#define VL53L5CX_TEMPORARY_BUFFER_SIZE ((uint32_t)VL53L5CX_MAX_RESULTS_SIZE)
+#endif
 
 union Block_header {
 	uint32_t bytes;
