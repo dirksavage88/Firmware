@@ -53,13 +53,9 @@ VL53L5CX::VL53L5CX(const I2CSPIDriverConfig &config)
 
 	_px4_rangefinder.set_fov(math::radians(61.f));
 
+
 	// Allow 3 retries as the device typically misses the first measure attempts.
 	I2C::_retries = 3;
-
-	// VL53L5CX_Configuration l5_config;
-	// VL53L5CX_ResultsData l5_results;
-
-
 	_px4_rangefinder.set_device_type(DRV_DIST_DEVTYPE_VL53L5CX);
 }
 
@@ -69,6 +65,10 @@ VL53L5CX::~VL53L5CX()
 	perf_free(_sample_perf);
 	perf_free(_comms_errors);
 }
+
+// Static variables have a place
+VL53L5CX_Configuration VL53L5CX::l5_config;
+VL53L5CX_ResultsData VL53L5CX::l5_results;
 
 int VL53L5CX::collect()
 {
@@ -161,6 +161,7 @@ int VL53L5CX::init()
 
 	ret |= VL53L5CX_SensorInit();
 	PX4_INFO("Sensor init complete");
+	// ret |= vl53l5cx_test_i2c(&l5_config);
 	ret |= VL53L5CX_StartRanging();
 
 	if (ret != PX4_OK) {
@@ -191,6 +192,7 @@ int8_t VL53L5CX::VL53L5CX_SensorInit()
 
 
 
+
 	status |= probe();
 
 	if (status != PX4_OK) {
@@ -217,8 +219,10 @@ int8_t VL53L5CX::VL53L5CX_SensorInit()
 int8_t VL53L5CX::VL53L5CX_StartRanging()
 {
 	int8_t status = 0;
+	uint8_t data_ready = 0;
 
 	status |= vl53l5cx_start_ranging(&l5_config); /* Enable VL53L5CX */
+	status |= VL53L5CX_CheckForDataReady(&data_ready);
 	return status;
 }
 
@@ -273,6 +277,99 @@ uint8_t VL53L5CX::WaitMs(VL53L5CX_Platform *p_platform, uint32_t TimeMs)
 	return PX4_OK;
 }
 /* ST low level functions for sensor reading/writing*/
+uint8_t VL53L5CX::vl53l5cx_test_i2c(VL53L5CX_Configuration *p_dev)
+{
+	uint8_t status = VL53L5CX_STATUS_OK;
+	PX4_INFO("Starting VL53L5CX I2C test...\n");
+
+	/* To check the I2C RdByte/WrByte function :
+	 * Inside the function “vl53l5cx_is_alive()�?, it will call I2C RdByte/WrByte to
+	 * read device and verion ID. which can help you to verify the I2C RdByte/WrByte
+	 * functions at same time.
+	 */
+	uint8_t device_id, revision_id;
+	status |= WrByte(&(p_dev->platform), 0x7fff, 0x00);
+	status |= RdByte(&(p_dev->platform), 0, &device_id);
+	status |= RdByte(&(p_dev->platform), 1, &revision_id);
+	status |= WrByte(&(p_dev->platform), 0x7fff, 0x02);
+
+	if (status) {
+		PX4_INFO("Error Rd/Wr byte: status %u\n", status);
+		return status;
+	}
+
+	/* To check the I2C RdMulti/WrMulti function:
+	 * Below is example codes which can help you vefify the I2C RdMulti/WrMulti
+	 * function.
+	 */
+
+	uint8_t Data_write[4] = {0x5A, 0xA5, 0xAA, 0x55};
+	uint8_t Data_read[4] = {0, 0, 0, 0};
+	uint8_t Data_default[4] = {0, 0, 0, 0};
+
+	status |= RdMulti(&(p_dev->platform), 0x100, Data_default, 4);
+
+	if (status) {
+		PX4_INFO("Error RdMulti: status %u\n", status);
+		return status;
+	}
+
+	PX4_INFO("Read default value and save it at begging\n");
+	PX4_INFO("Data_default (0x%x)\n", Data_default[0]);
+	PX4_INFO("Data_default (0x%x)\n", Data_default[1]);
+	PX4_INFO("Data_default (0x%x)\n", Data_default[2]);
+	PX4_INFO("Data_default (0x%x)\n", Data_default[3]);
+
+	status |= WrMulti(&(p_dev->platform), 0x100, Data_write, 4);
+
+	if (status) {
+		PX4_INFO("Error WrMulti: status %u\n", status);
+		return status;
+	}
+
+	PX4_INFO("Writing values 0x5A 0xA5 0xAA 0x55\n");
+
+	status |= RdMulti(&(p_dev->platform), 0x100, Data_read, 4);
+
+	if (status) {
+		PX4_INFO("Error RdMulti: status %u\n", status);
+		return status;
+	}
+
+	PX4_INFO("Reading:\n");
+	PX4_INFO("Data_read (0x%x)\n", Data_read[0]);
+	PX4_INFO("Data_read (0x%x)\n", Data_read[1]);
+	PX4_INFO("Data_read (0x%x)\n", Data_read[2]);
+	PX4_INFO("Data_read (0x%x)\n", Data_read[3]);
+
+
+	status |= WrMulti(&(p_dev->platform), 0x100, Data_default, 4);
+	PX4_INFO("Write back default value\n");
+
+	if (status) {
+		PX4_INFO("Error WrMulti: status %u\n", status);
+		return status;
+	}
+
+	status |= RdMulti(&(p_dev->platform), 0x100, Data_default, 4);
+
+	if (status) {
+		PX4_INFO("Error RdMulti: status %u\n", status);
+		return status;
+	}
+
+	PX4_INFO("Read value again to make sure default value was correct loaded\n");
+	PX4_INFO("Data_default (0x%x)\n", Data_default[0]);
+	PX4_INFO("Data_default (0x%x)\n", Data_default[1]);
+	PX4_INFO("Data_default (0x%x)\n", Data_default[2]);
+	PX4_INFO("Data_default (0x%x)\n", Data_default[3]);
+
+	PX4_INFO("I2C test done - everything works fine.\n");
+
+	return status;
+}
+
+
 uint8_t VL53L5CX::RdByte(VL53L5CX_Platform *p_platform, uint16_t RegisterAddress,
 			 uint8_t *p_value)
 {
@@ -330,24 +427,36 @@ uint8_t VL53L5CX::WrMulti(VL53L5CX_Platform *p_platform, uint16_t RegisterAddres
 
 	/* Add the register address bytes (2) to the array */
 	uint32_t packet_buff_len = size + 2;
+	uint8_t *p_write;
 
-	uint8_t mwrite_local[packet_buff_len];
+
+	// uint8_t mwrite_local[packet_buff_len];
+	p_write = (uint8_t *)malloc(packet_buff_len);
 
 	/* Write the register address of the sensor and send data byte*/
+	p_write[0] = (RegisterAddress >> 8) & 0xff;
+	p_write[1] = RegisterAddress & 0xff;
 
-	mwrite_local[0] = (RegisterAddress >> 8) & 0xff;
-	mwrite_local[1] = RegisterAddress & 0xff;
-	memcpy(&mwrite_local[2], p_values, size);
+	// Size of data plus 2 bytes for register address
+	// Copy the data onto a buffer on the heap
+	for (uint8_t i = 2; i < size; ++i) {
+		p_write[i] = p_values[i];
 
-	const unsigned i2c_buffer_size = sizeof(mwrite_local);
+	}
+
+	//memcpy(&mwrite_local[2], p_values, size);
+
+	const uint16_t i2c_buffer_size = sizeof(p_write);
 	/* transfer all data bytes in the buffer to the sensor */
-	ret = transfer(&mwrite_local[0], i2c_buffer_size, nullptr, 0);
+
+	ret = transfer(&p_write[0], i2c_buffer_size, nullptr, 0);
 
 	if (ret != PX4_OK) {
 		perf_count(_comms_errors);
 		return ret;
 	}
 
+	free(p_write);
 	return PX4_OK;
 }
 
@@ -355,7 +464,6 @@ uint8_t VL53L5CX::RdMulti(VL53L5CX_Platform *p_platform, uint16_t RegisterAddres
 			  uint8_t *p_values, uint32_t size)
 {
 	int8_t ret;
-
 	uint8_t mread_local[2];
 
 	/* Write the register address of the sensor*/
@@ -371,11 +479,7 @@ uint8_t VL53L5CX::RdMulti(VL53L5CX_Platform *p_platform, uint16_t RegisterAddres
 	}
 
 	/* Read the incoming buffer from the sensor */
-	// for (uint32_t i = 0; i < size; ++i) {
-	//
 	ret = transfer(nullptr, 0, &p_values[0], size);
-	//
-	// }
 
 	if (ret != PX4_OK) {
 		perf_count(_comms_errors);
@@ -409,13 +513,17 @@ void VL53L5CX::SwapBuffer(uint8_t *buffer, uint16_t size)
 {
 	uint32_t i, tmp;
 
-//TODO
+//TODO: Swap buffer gets 0 for resolution and range ui content
 	/* Example of possible implementation using <string.h> */
 	for (i = 0; i < size; i = i + 4) {
 		tmp = (buffer[i] << 24) | (buffer[i + 1] << 16) | (buffer[i + 2] << 8) |
 		      (buffer[i + 3]);
 
-		memcpy(&(buffer[i]), &tmp, 4);
+		// tmp = buffer[i] | (buffer[i + 1] << 8) | (buffer[i + 2] << 16) |
+		//       (buffer[i + 3] << 24);
+		// PX4_INFO("Swapped: %lu, index: %lu", tmp, i);
+
+		memcpy(&(buffer[i]), &tmp, sizeof(tmp));
 	}
 }
 
@@ -493,6 +601,7 @@ uint8_t VL53L5CX::vl53l5cx_send_offset_data(VL53L5CX_Configuration *p_dev,
 	/* Data extrapolation is required for 4X4 offset */
 	if (resolution == (uint8_t)VL53L5CX_RESOLUTION_4X4) {
 		(void)memcpy(&(p_dev->temp_buffer[0x10]), dss_4x4, sizeof(dss_4x4));
+
 		SwapBuffer(p_dev->temp_buffer, VL53L5CX_OFFSET_BUFFER_SIZE);
 		(void)memcpy(signal_grid, &(p_dev->temp_buffer[0x3C]), sizeof(signal_grid));
 		(void)memcpy(range_grid, &(p_dev->temp_buffer[0x140]), sizeof(range_grid));
@@ -880,37 +989,35 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 	uint32_t fw_addr = 0x0;
 
 	// Transfer initial 32k bytes
-	for (uint8_t i = 0; i < 32; ++i) {
+	// for (uint16_t i = 0; i < 256; ++i) {
 
-		status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x400);
-		// WaitMs(&(p_dev->platform), 5);
-		fw_addr += 0x400;
-
-	}
-
+	status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x8000);
+	// status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x80);
+	// WaitMs(&(p_dev->platform), 30);
+	// fw_addr += 0x80;
+	//
+	// }
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x0a);
-
 	// Transfer next 32k bytes
-	for (uint8_t i = 0; i < 32; ++i) {
+	// for (uint16_t i = 0; i < 256; ++i) {
 
-		status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x400);
-		// WaitMs(&(p_dev->platform), 5);
-		fw_addr += 0x400;
-
-	}
-
+	status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[0x8000], 0x8000);
+	// status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x80);
+	// WaitMs(&(p_dev->platform), 5);
+	//  	fw_addr += 0x80;
+	// }
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x0b);
 
-	for (uint8_t i = 0; i < 20; ++i) {
+	// for (uint8_t i = 0; i < 160; ++i) {
+	// Transfer the last 20kb
 
-		status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x400);
-		// WaitMs(&(p_dev->platform), 5);
-		fw_addr += 0x400;
+	status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[0x10000], 0x5000);
+	// status |= WrMulti(&(p_dev->platform), 0, (uint8_t *)&VL53L5CX_FIRMWARE[fw_addr], 0x80);
+	// WaitMs(&(p_dev->platform), 5);
+	// fw_addr += 0x80;
+	// }
 
-	}
-
-	// WaitMs(&(p_dev->platform), 10);
-	// PX4_INFO("last transfer: %lu", fw_addr);
+	WaitMs(&(p_dev->platform), 10);
 
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x01);
 	/* Check if FW correctly downloaded */
@@ -941,7 +1048,8 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 	status |= WrByte(&(p_dev->platform), 0x0B, 0x01);
 	status |= vl53l5cx_poll_for_mcu_boot(p_dev);
 
-	// WaitMs(&(p_dev->platform), 20);
+	WaitMs(&(p_dev->platform), 20);
+
 	if (status != (uint8_t)0) {
 
 		PX4_INFO("reset MCU fail");
@@ -953,19 +1061,17 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 	/* Get offset NVM data and store them into the offset buffer */
 	status |= WrMulti(&(p_dev->platform), 0x2fd8, (uint8_t *)VL53L5CX_GET_NVM_CMD,
 			  sizeof(VL53L5CX_GET_NVM_CMD));
-// Changed to 20, was 10
-	// WaitMs(&(p_dev->platform), 20);
-
 
 	/* poll fails and subsequent polls also fail, see fix in function */
-
 	status |= vl53l5cx_poll_for_answer(p_dev, 4, 0, VL53L5CX_UI_CMD_STATUS, 0xff, 2);
 
+	PX4_INFO("Poll for answer nvm: %d", status);
 	status |= RdMulti(&(p_dev->platform), VL53L5CX_UI_CMD_START,
 			  p_dev->temp_buffer, VL53L5CX_NVM_DATA_SIZE);
 
 	(void)memcpy(p_dev->offset_data, p_dev->temp_buffer,
 		     VL53L5CX_OFFSET_BUFFER_SIZE);
+
 	status |= vl53l5cx_send_offset_data(p_dev, VL53L5CX_RESOLUTION_4X4);
 
 	/* Set default Xtalk shape. Send Xtalk to sensor */
@@ -991,7 +1097,6 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 	status |= vl53l5cx_dci_write_data(p_dev, (uint8_t *)&single_range,
 					  VL53L5CX_DCI_SINGLE_RANGE,
 					  (uint16_t)sizeof(single_range));
-
 	tmp = (uint8_t)1;
 	status |= vl53l5cx_dci_replace_data(p_dev, p_dev->temp_buffer,
 					    VL53L5CX_GLARE_FILTER, 40,
@@ -999,7 +1104,6 @@ uint8_t VL53L5CX::vl53l5cx_init(VL53L5CX_Configuration *p_dev)
 	status |= vl53l5cx_dci_replace_data(p_dev, p_dev->temp_buffer,
 					    VL53L5CX_GLARE_FILTER, 40,
 					    (uint8_t *)&tmp, 1, 0x25);
-
 	return status;
 }
 
@@ -1014,8 +1118,7 @@ uint8_t VL53L5CX::vl53l5cx_start_ranging(VL53L5CX_Configuration *p_dev)
 	uint8_t cmd[] = {0x00, 0x03, 0x00, 0x00};
 
 	status |= vl53l5cx_get_resolution(&l5_config, &resolution);
-
-	// status |= WaitMs(&(p_dev->platform), 10);
+	//status |= vl53l5cx_poll_for_answer(VL53L5CX_Configuration *p_dev, int size, int pos, int address, int mask, int expected_value)
 	PX4_INFO("Resolution set as: %d, status: %d", resolution, status);
 
 	p_dev->data_read_size = 0;
@@ -1120,37 +1223,15 @@ uint8_t VL53L5CX::vl53l5cx_start_ranging(VL53L5CX_Configuration *p_dev)
 			  (uint8_t *)cmd, sizeof(cmd));
 	status |= vl53l5cx_poll_for_answer(p_dev, 4, 1, VL53L5CX_UI_CMD_STATUS, 0xff,
 					   0x03);
+	PX4_INFO("Start Rng (wrmulti): %d", status);
 	/* Read ui range data content and compare if data size is the correct one */
 	// do {
 
 	status |=
 		vl53l5cx_dci_read_data(p_dev, (uint8_t *)p_dev->temp_buffer, 0x5440, 12);
 
-
-	if (sizeof(p_dev->temp_buffer) <= 0) {
-
-		PX4_INFO("NO data received");
-		// timeout++;
-	}
-
-	else if (sizeof(p_dev->temp_buffer) < 24) {
-
-		PX4_INFO("Some ranging data received");
-		// timeout++;
-	}
-
-	else {
-		PX4_INFO("All ranging data received");
-		// break;
-	}
-
-	// 	timeout ++;
-	// }
-	// while(timeout < (uint16_t)200);
-
-	// PX4_INFO("Temp buf data byte 1: %d", p_dev->temp_buffer[0x8]);
+	PX4_INFO("Start Rng (dcird): %d", status);
 	(void)memcpy(&tmp, &(p_dev->temp_buffer[0x8]), sizeof(tmp));
-	// size_t data_rd_sz = sizeof(p_dev->data_read_size);
 
 	if (tmp != p_dev->data_read_size) {
 		PX4_INFO("Read data: %lu", p_dev->data_read_size);

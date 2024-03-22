@@ -59,6 +59,7 @@
 #define VL53L5CX_RANGING_MODE_AUTONOMOUS ((uint8_t)3U)
 #define VL53L5CX_POWER_MODE_SLEEP ((uint8_t)0U)
 #define VL53L5CX_POWER_MODE_WAKEUP ((uint8_t)1U)
+
 #define VL53L5CX_STATUS_OK ((uint8_t)0U)
 #define VL53L5CX_STATUS_TIMEOUT_ERROR ((uint8_t)1U)
 #define VL53L5CX_STATUS_CORRUPTED_FRAME ((uint8_t)2U)
@@ -71,31 +72,34 @@
 #define VL53L5CX_DEFAULT_I2C_ADDRESS ((uint16_t)0x52)
 #define VL53L5CX_RESOLUTION_4X4 ((uint8_t)16U)
 #define VL53L5CX_RESOLUTION_8X8 ((uint8_t)64U)
+
+// Define target per zone
 #define VL53L5CX_NB_TARGET_PER_ZONE 1U
 
-#define VL53L5CX_START_BH ((uint32_t)0x0000000DU)
-#define VL53L5CX_METADATA_BH ((uint32_t)0x54B400C0U)
-#define VL53L5CX_COMMONDATA_BH ((uint32_t)0x54C00040U)
-#define VL53L5CX_AMBIENT_RATE_BH ((uint32_t)0x54D00104U)
-#define VL53L5CX_NB_TARGET_DETECTED_BH ((uint32_t)0x57D00401U)
-#define VL53L5CX_SPAD_COUNT_BH ((uint32_t)0x55D00404U)
-#define VL53L5CX_SIGNAL_RATE_BH ((uint32_t)0x58900404U)
-#define VL53L5CX_RANGE_SIGMA_MM_BH ((uint32_t)0x64900402U)
-#define VL53L5CX_DISTANCE_BH ((uint32_t)0x66900402U)
-#define VL53L5CX_REFLECTANCE_BH ((uint32_t)0x6A900401U)
-#define VL53L5CX_TARGET_STATUS_BH ((uint32_t)0x6B900401U)
-#define VL53L5CX_MOTION_DETECT_BH ((uint32_t)0xCC5008C0U)
+// range for results block headers
+#define VL53L5CX_START_BH				((uint32_t)0x0000000DU)
+#define VL53L5CX_METADATA_BH			((uint32_t)0x54B400C0U)
+#define VL53L5CX_COMMONDATA_BH			((uint32_t)0x54C00040U)
+#define VL53L5CX_AMBIENT_RATE_BH		((uint32_t)0x54D00104U)
+#define VL53L5CX_SPAD_COUNT_BH			((uint32_t)0x55D00404U)
+#define VL53L5CX_NB_TARGET_DETECTED_BH	((uint32_t)0xDB840401U)
+#define VL53L5CX_SIGNAL_RATE_BH			((uint32_t)0xDBC40404U)
+#define VL53L5CX_RANGE_SIGMA_MM_BH		((uint32_t)0xDEC40402U)
+#define VL53L5CX_DISTANCE_BH			((uint32_t)0xDF440402U)
+#define VL53L5CX_REFLECTANCE_BH			((uint32_t)0xE0440401U)
+#define VL53L5CX_TARGET_STATUS_BH		((uint32_t)0xE0840401U)
+#define VL53L5CX_MOTION_DETECT_BH		((uint32_t)0xD85808C0U)
 
-#define VL53L5CX_METADATA_IDX ((uint16_t)0x54B4U)
-#define VL53L5CX_SPAD_COUNT_IDX ((uint16_t)0x55D0U)
-#define VL53L5CX_AMBIENT_RATE_IDX ((uint16_t)0x54D0U)
-#define VL53L5CX_NB_TARGET_DETECTED_IDX ((uint16_t)0x57D0U)
-#define VL53L5CX_SIGNAL_RATE_IDX ((uint16_t)0x5890U)
-#define VL53L5CX_RANGE_SIGMA_MM_IDX ((uint16_t)0x6490U)
-#define VL53L5CX_DISTANCE_IDX ((uint16_t)0x6690U)
-#define VL53L5CX_REFLECTANCE_EST_PC_IDX ((uint16_t)0x6A90U)
-#define VL53L5CX_TARGET_STATUS_IDX ((uint16_t)0x6B90U)
-#define VL53L5CX_MOTION_DETEC_IDX ((uint16_t)0xCC50U)
+#define VL53L5CX_METADATA_IDX			((uint16_t)0x54B4U)
+#define VL53L5CX_SPAD_COUNT_IDX			((uint16_t)0x55D0U)
+#define VL53L5CX_AMBIENT_RATE_IDX		((uint16_t)0x54D0U)
+#define VL53L5CX_NB_TARGET_DETECTED_IDX	((uint16_t)0xDB84U)
+#define VL53L5CX_SIGNAL_RATE_IDX		((uint16_t)0xDBC4U)
+#define VL53L5CX_RANGE_SIGMA_MM_IDX		((uint16_t)0xDEC4U)
+#define VL53L5CX_DISTANCE_IDX			((uint16_t)0xDF44U)
+#define VL53L5CX_REFLECTANCE_EST_PC_IDX	((uint16_t)0xE044U)
+#define VL53L5CX_TARGET_STATUS_IDX		((uint16_t)0xE084U)
+#define VL53L5CX_MOTION_DETEC_IDX		((uint16_t)0xD858U)
 
 /* ST API Inner macro */
 #define VL53L5CX_NVM_DATA_SIZE ((uint16_t)492U)
@@ -247,7 +251,6 @@ typedef struct {
 	uint8_t temp_buffer[VL53L5CX_TEMPORARY_BUFFER_SIZE];
 	/* Auto-stop flag for stopping the sensor */
 	uint8_t is_auto_stop_enabled;
-	uint8_t resolution;
 } VL53L5CX_Configuration;
 
 /* ST API Results */
@@ -335,9 +338,11 @@ public:
 	 */
 	void RunImpl();
 
+	static VL53L5CX_Configuration l5_config;
+	static VL53L5CX_ResultsData l5_results;
 
-	VL53L5CX_Configuration l5_config;
-	VL53L5CX_ResultsData l5_results;
+	// VL53L5CX_Configuration l5_config;
+	// VL53L5CX_ResultsData l5_results;
 
 private:
 	int probe() override;
@@ -416,6 +421,9 @@ private:
 	uint8_t Reset_Sensor(VL53L5CX_Platform *p_platform);
 	void SwapBuffer(uint8_t *buffer, uint16_t size);
 	uint8_t WaitMs(VL53L5CX_Platform *p_platform, uint32_t TimeMs);
+
+	uint8_t vl53l5cx_test_i2c(VL53L5CX_Configuration *p_dev);
+
 	/* PX4 */
 	int8_t VL53L5CX_SensorInit();
 	int8_t VL53L5CX_StartRanging();
