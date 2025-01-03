@@ -32,6 +32,9 @@ publications:
   - topic: /fmu/out/message_format_response
     type: px4_msgs::msg::MessageFormatResponse
 
+  - topic: /fmu/out/obstacle_distance
+    type: px4_msgs::msg::ObstacleDistance
+
   - topic: /fmu/out/position_setpoint_triplet
     type: px4_msgs::msg::PositionSetpointTriplet
 
