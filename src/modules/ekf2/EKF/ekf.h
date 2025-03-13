@@ -66,6 +66,10 @@
 # include "aid_sources/aux_global_position/aux_global_position.hpp"
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD)
+# include "aid_sources/optical_flow_upward/optical_flow_upward.hpp"
+#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+
 enum class Likelihood { LOW, MEDIUM, HIGH };
 class ExternalVisionVel;
 
@@ -418,6 +422,7 @@ public:
 	void updateParameters();
 
 	friend class AuxGlobalPosition;
+	friend class OpticalFlowUpward;
 
 private:
 
@@ -1142,6 +1147,10 @@ private:
 #if defined(CONFIG_EKF2_AUX_GLOBAL_POSITION) && defined(MODULE_NAME)
 	AuxGlobalPosition _aux_global_position {};
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
+
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
+	OpticalFlowUpward _optical_flow_upward {};
+#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
 };
 
 #endif // !EKF_EKF_H

@@ -111,6 +111,7 @@
 #endif // CONFIG_EKF2_MAGNETOMETER
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW)
+# include <uORB/topics/sensor_optical_flow.h>
 # include <uORB/topics/vehicle_optical_flow.h>
 # include <uORB/topics/vehicle_optical_flow_vel.h>
 #endif // CONFIG_EKF2_OPTICAL_FLOW
@@ -223,6 +224,7 @@ private:
 	bool UpdateFlowSample(ekf2_timestamps_s &ekf2_timestamps);
 	void PublishOpticalFlowVel(const hrt_abstime &timestamp);
 #endif // CONFIG_EKF2_OPTICAL_FLOW
+
 #if defined(CONFIG_EKF2_MAGNETOMETER)
 	void UpdateMagSample(ekf2_timestamps_s &ekf2_timestamps);
 #endif // CONFIG_EKF2_MAGNETOMETER
@@ -345,6 +347,15 @@ private:
 	uORB::PublicationMulti<estimator_aid_source2d_s> _estimator_aid_src_optical_flow_pub{ORB_ID(estimator_aid_src_optical_flow)};
 	hrt_abstime _status_optical_flow_pub_last{0};
 	hrt_abstime _optical_flow_vel_pub_last{0};
+#endif // CONFIG_EKF2_OPTICAL_FLOW
+
+#if defined(CONFIG_EKF2_OPTICAL_FLOW) // upward
+	uORB::Subscription _sensor_optical_flow_upward_sub {ORB_ID(sensor_optical_flow), 1};
+	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_upward_vel_pub{ORB_ID(estimator_optical_flow_upward_vel)};
+
+	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_upward_pub{ORB_ID(estimator_aid_src_optical_flow_upward)};
+	hrt_abstime _status_optical_flow_upward_pub_last{0};
+	hrt_abstime _optical_flow_upward_vel_pub_last{0};
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
 #if defined(CONFIG_EKF2_BAROMETER)

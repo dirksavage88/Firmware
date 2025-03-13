@@ -1,8 +1,9 @@
 uint64 timestamp                       # time since system start (microseconds)
 uint64 timestamp_sample                # the timestamp of the raw data (microseconds)
 
-float32[2] vel_body                    # velocity obtained from gyro-compensated and distance-scaled optical flow raw measurements in body frame(m/s)
-float32[2] vel_ne                      # same as vel_body but in local frame (m/s)
+float32[3] vel_sensor
+float32[3] vel_body                    # velocity obtained from gyro-compensated and distance-scaled optical flow raw measurements in body frame(m/s)
+float32[3] vel_ne                      # same as vel_body but in local frame (m/s)
 
 float32[2] vel_body_filtered           # filtered velocity obtained from gyro-compensated and distance-scaled optical flow raw measurements in body frame(m/s)
 float32[2] vel_ne_filtered             # filtered same as vel_body_filtered but in local frame (m/s)
@@ -16,3 +17,4 @@ float32[3] gyro_bias
 float32[3] ref_gyro
 
 # TOPICS estimator_optical_flow_vel vehicle_optical_flow_vel
+# TOPICS estimator_optical_flow_upward_vel

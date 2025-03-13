@@ -360,6 +360,11 @@ void EKF2::AdvertiseTopics()
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
+#if defined(CONFIG_EKF2_OPTICAL_FLOW) // upward
+		_estimator_optical_flow_upward_vel_pub.advertise();
+		_estimator_aid_src_optical_flow_upward_pub.advertise();
+#endif // CONFIG_EKF2_OPTICAL_FLOW
+
 #if defined(CONFIG_EKF2_RANGE_FINDER)
 
 		// RNG advertise
@@ -1936,6 +1941,7 @@ void EKF2::PublishStatusFlags(const hrt_abstime &timestamp)
 		status_flags.cs_constant_pos        = _ekf.control_status_flags().constant_pos;
 		status_flags.cs_baro_fault	    = _ekf.control_status_flags().baro_fault;
 		status_flags.cs_gnss_vel            = _ekf.control_status_flags().gnss_vel;
+		status_flags.cs_optical_flow_upward = _ekf.control_status_flags().optical_flow_upward;
 
 		status_flags.fault_status_changes     = _filter_fault_status_changes;
 		status_flags.fs_bad_mag_x             = _ekf.fault_status_flags().bad_mag_x;
