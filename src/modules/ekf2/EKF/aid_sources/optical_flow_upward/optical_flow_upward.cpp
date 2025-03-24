@@ -163,15 +163,15 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 			if (starting_conditions) {
 				_state = State::starting;
 
-				if ((_test_ratio_filtered > 0.f) && (_test_ratio_filtered < 0.1f)) {
+				if ((_test_ratio_filtered > 0.f) && (_test_ratio_filtered < 0.5f)) {
 					// TODO: conservative start
 
-					bool fused = false;
+					bool fused = true;
 					bool reset = false;
 
 					if (fused || reset) {
 						ekf.enableControlStatusOpticalFlowUpward();
-						//_reset_counters.lat_lon = sample.lat_lon_reset_counter;
+						// _reset_counters.lat_lon = sample.lat_lon_reset_counter;
 						_state = State::active;
 					}
 
