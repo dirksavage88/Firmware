@@ -482,6 +482,14 @@ float Ekf::getHorizontalVelocityInnovationTestRatio() const
 		}
 	}
 
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
+
+	if (isOnlyActiveSourceOfHorizontalAiding(_control_status.flags.optical_flow_upward)) {
+		test_ratio = math::max(test_ratio, fabsf(_optical_flow_upward.test_ratio_filtered()));
+	}
+
+#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
 	if (PX4_ISFINITE(test_ratio) && (test_ratio >= 0.f)) {
@@ -840,6 +848,17 @@ void Ekf::updateHorizontalDeadReckoningstatus()
 	}
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
+
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
+
+	// optical flow upward active
+	if (_control_status.flags.optical_flow_upward
+	    && isRecent(_time_last_hor_vel_fuse, _params.no_aid_timeout_max)
+	   ) {
+		inertial_dead_reckoning = false;
+	}
+
+#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
 
 #if defined(CONFIG_EKF2_AIRSPEED)
 
