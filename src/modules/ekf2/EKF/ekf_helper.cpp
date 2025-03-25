@@ -296,6 +296,12 @@ void Ekf::get_ekf_vel_accuracy(float *ekf_evh, float *ekf_evv) const
 		if (_control_status.flags.opt_flow) {
 			float gndclearance = math::max(_params.rng_gnd_clearance, 0.1f);
 			vel_err_conservative = math::max(getHagl(), gndclearance) * Vector2f(_aid_src_optical_flow.innovation).norm();
+
+		} else if (_control_status.flags.optical_flow_upward) {
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
+			vel_err_conservative = _optical_flow_upward.innovation().norm();
+#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+
 		}
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW

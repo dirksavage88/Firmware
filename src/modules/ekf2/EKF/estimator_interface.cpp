@@ -626,6 +626,7 @@ int EstimatorInterface::getNumberOfActiveHorizontalVelocityAidingSources() const
 {
 	return int(_control_status.flags.gnss_vel)
 	       + int(_control_status.flags.opt_flow)
+	       + int(_control_status.flags.optical_flow_upward)
 	       + int(_control_status.flags.ev_vel)
 	       // Combined airspeed and sideslip fusion allows sustained wind relative dead reckoning
 	       // and so is treated as a single aiding source.

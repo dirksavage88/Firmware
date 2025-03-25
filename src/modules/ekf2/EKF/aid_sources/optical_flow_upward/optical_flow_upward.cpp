@@ -294,6 +294,9 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 			_estimator_optical_flow_vel_pub.publish(flow_vel);
 		}
 
+		_vel_ne_innovation = innov.xy();
+		_vel_ne_test_ratio(0) = aid_src.test_ratio[0];
+		_vel_ne_test_ratio(1) = aid_src.test_ratio[1];
 
 		_test_ratio_filtered = math::max(fabsf(aid_src.test_ratio_filtered[0]), fabsf(aid_src.test_ratio_filtered[1]));
 #endif // MODULE_NAME

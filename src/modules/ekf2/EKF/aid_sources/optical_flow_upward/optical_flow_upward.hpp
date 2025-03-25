@@ -78,6 +78,9 @@ public:
 		updateParams();
 	}
 
+	const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
+	const matrix::Vector2f &innovation() const { return _vel_ne_innovation; }
+
 	float test_ratio_filtered() const { return _test_ratio_filtered; }
 
 private:
@@ -112,6 +115,9 @@ private:
 
 	matrix::Vector3f _flow_gyro_bias{};
 
+
+	matrix::Vector2f _vel_ne_innovation{};
+	matrix::Vector2f _vel_ne_test_ratio{};
 
 
 	Vector2f _flow_vel_body{};
