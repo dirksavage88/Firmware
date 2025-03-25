@@ -13,7 +13,7 @@ parameters:
       description:
         short: Optical flow upward estimator delay relative to IMU measurements
       type: float
-      default: 0
+      default: 10
       min: 0
       max: 300
       unit: ms
@@ -24,9 +24,9 @@ parameters:
         short: Measurement noise for aux global position measurements
         long:  Used to lower bound or replace the uncertainty included in the message
       type: float
-      default: 0.9
+      default: 1.0
       min: 0.01
-      unit: m
+      unit: m/s
       decimal: 2
     EKF2_OFU_GATE:
       description:

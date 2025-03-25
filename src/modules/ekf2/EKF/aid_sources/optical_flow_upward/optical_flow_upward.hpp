@@ -45,6 +45,8 @@
 #include "../../common.h"
 #include "../../RingBuffer.h"
 
+#include <lib/mathlib/math/WelfordMeanVector.hpp>
+
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
 
 #if defined(MODULE_NAME)
@@ -109,6 +111,18 @@ private:
 
 
 	matrix::Vector3f _flow_gyro_bias{};
+
+
+
+	Vector2f _flow_vel_body{};
+
+	static constexpr float _kSensorLpfTimeConstant = 0.09f;
+	AlphaFilter<Vector2f> _flow_sensor_vel_lpf{0.01, _kSensorLpfTimeConstant}; ///< filtered velocity from corrected flow measurement (body frame)(m/s)
+	AlphaFilter<Vector2f> _flow_body_vel_lpf{0.01, _kSensorLpfTimeConstant}; ///< filtered velocity from corrected flow measurement (body frame)(m/s)
+	uint32_t _flow_counter{0};                      ///< number of flow samples read for initialization
+
+	math::WelfordMeanVector<float, 2> _flow_mean{};
+	math::WelfordMeanVector<float, 2> _flow_sensor_vel_mean{};
 
 #if defined(MODULE_NAME)
 	struct reset_counters_s {

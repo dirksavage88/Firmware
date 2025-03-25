@@ -119,6 +119,27 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 
 		const Vector3f ref_body_rate = -(imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf.getGyroBias());
 
+		if (_flow_counter == 0) {
+			_flow_sensor_vel_lpf.reset(vel_sensor.xy());
+			_flow_body_vel_lpf.reset(vel_body.xy());
+
+			_flow_mean.reset();
+			_flow_sensor_vel_mean.reset();
+
+			_flow_counter = 1;
+
+		} else {
+
+			_flow_sensor_vel_lpf.update(vel_sensor.xy());
+			_flow_body_vel_lpf.update(vel_body.xy());
+
+
+			_flow_mean.update(sample.flow_xy_rad);
+			_flow_sensor_vel_mean.update(vel_sensor.xy());
+
+			_flow_counter++;
+		}
+
 		// const Vector3f angular_velocity = imu_sample.delta_ang / imu_sample.delta_ang_dt - ekf._state.gyro_bias;
 		// Vector3f position_offset_body = ekf._params.ev_pos_body - ekf._params.imu_pos_body;
 		// _velocity_offset_body = angular_velocity % position_offset_body;
@@ -200,10 +221,10 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 					}
 
 					aid_src.fused = true;
-					aid_src.time_last_fuse = ekf._time_delayed_us;
+					aid_src.time_last_fuse = imu_delayed.time_us;
 
-					//_time_last_hor_vel_fuse = _time_delayed_us;
-					//_time_last_ver_vel_fuse = _time_delayed_us;
+					ekf._time_last_hor_vel_fuse = imu_delayed.time_us;
+					ekf._time_last_ver_vel_fuse = imu_delayed.time_us;
 				}
 
 				if (isTimedOut(aid_src.time_last_fuse, imu_delayed.time_us, ekf._params.no_aid_timeout_max)) {
@@ -247,8 +268,16 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 			vel_ned.copyTo(flow_vel.vel_ne);
 
 			// TODO
+			_flow_sensor_vel_lpf.getState().copyTo(flow_vel.vel_sensor_filtered);
+			_flow_body_vel_lpf.getState().copyTo(flow_vel.vel_body_filtered);
 			//ekf.getFilteredFlowVelBody().copyTo(flow_vel.vel_body_filtered);
 			//ekf.getFilteredFlowVelNE().copyTo(flow_vel.vel_ne_filtered);
+
+			_flow_mean.mean().copyTo(flow_vel.flow_mean);
+			_flow_mean.variance().copyTo(flow_vel.flow_mean_var);
+
+			_flow_sensor_vel_mean.mean().copyTo(flow_vel.vel_sensor_mean);
+			_flow_sensor_vel_mean.variance().copyTo(flow_vel.vel_sensor_mean_var);
 
 			sample.flow_xy_rad.copyTo(flow_vel.flow_rate_uncompensated);
 			flow_compensated_xy_rad.copyTo(flow_vel.flow_rate_compensated);
