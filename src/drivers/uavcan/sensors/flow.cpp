@@ -67,6 +67,11 @@ void UavcanFlowBridge::flow_sub_cb(const uavcan::ReceivedDataStructure<com::hex:
 	device_id.devid_s.devtype = DRV_FLOW_DEVTYPE_UAVCAN;
 	device_id.devid_s.address = msg.getSrcNodeID().get() & 0xFF;
 
+	//HACK: we eventually need to pull in a quaternion (maybe from the dsdl solution?)
+	if (device_id.devid_s.address == 123) {
+		flow.oriented_upward = true;
+	}
+
 	flow.device_id = device_id.devid;
 
 	flow.pixel_flow[0] = msg.flow_integral[0];

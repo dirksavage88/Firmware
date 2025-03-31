@@ -63,32 +63,36 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 			}
 		}
 
-		// NOTE: the EKF uses the reverse sign convention to the flow sensor. EKF assumes positive LOS rate
-		// is produced by a RH rotation of the image about the sensor axis.
-		Vector2f flow_xy_rad = Vector2f(-sensor_optical_flow.pixel_flow[0], -sensor_optical_flow.pixel_flow[1]);
-		Vector3f gyro_integral = Vector3f(-sensor_optical_flow.delta_angle[0], -sensor_optical_flow.delta_angle[1],
-						  -sensor_optical_flow.delta_angle[2]);
+		//HACK: fix with actual orientation from the sensor
+		if (sensor_optical_flow.oriented_upward) {
+			// NOTE: the EKF uses the reverse sign convention to the flow sensor. EKF assumes positive LOS rate
+			// is produced by a RH rotation of the image about the sensor axis.
+			Vector2f flow_xy_rad = Vector2f(-sensor_optical_flow.pixel_flow[0], -sensor_optical_flow.pixel_flow[1]);
+			Vector3f gyro_integral = Vector3f(-sensor_optical_flow.delta_angle[0], -sensor_optical_flow.delta_angle[1],
+							  -sensor_optical_flow.delta_angle[2]);
 
-		const float flow_dt = 1e-6f * (float)sensor_optical_flow.integration_timespan_us;
+			const float flow_dt = 1e-6f * (float)sensor_optical_flow.integration_timespan_us;
 
-		// correct timestamp to midpoint of integration interval as the data is converted to rates
-		const int64_t time_us = sensor_optical_flow.timestamp_sample
-					- sensor_optical_flow.integration_timespan_us / 2
-					- static_cast<int64_t>(_param_ekf2_ofu_delay.get() * 1000);
+			// correct timestamp to midpoint of integration interval as the data is converted to rates
+			const int64_t time_us = sensor_optical_flow.timestamp_sample
+						- sensor_optical_flow.integration_timespan_us / 2
+						- static_cast<int64_t>(_param_ekf2_ofu_delay.get() * 1000);
 
-		if (time_us > 0 && PX4_ISFINITE(range_m)) {
-			OpticalFlowUpwardSample sample{
-				.time_us = (uint64_t)time_us,
-				.flow_dt = flow_dt,
-				.flow_xy_rad = flow_xy_rad,
-				.gyro_integral = gyro_integral,
-				.range_m = range_m,
-				.flow_quality = sensor_optical_flow.quality
-			};
+			if (time_us > 0 && PX4_ISFINITE(range_m)) {
+				OpticalFlowUpwardSample sample{
+					.time_us = (uint64_t)time_us,
+					.flow_dt = flow_dt,
+					.flow_xy_rad = flow_xy_rad,
+					.gyro_integral = gyro_integral,
+					.range_m = range_m,
+					.flow_quality = sensor_optical_flow.quality
+				};
 
-			_ringbuffer.push(sample);
+				_ringbuffer.push(sample);
 
-			_time_last_buffer_push = imu_delayed.time_us;
+				_time_last_buffer_push = imu_delayed.time_us;
+			}
+
 		}
 	}
 

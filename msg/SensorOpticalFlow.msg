@@ -7,7 +7,7 @@ float32[2] pixel_flow          # (radians) optical flow in radians where a posit
 
 float32[3] delta_angle         # (radians) accumulated gyro radians where a positive value is produced by a RH rotation about the body axis. Set to NaN if flow sensor does not have 3-axis gyro data.
 bool delta_angle_available
-
+bool oriented_upward
 float32 distance_m             # (meters) Distance to the center of the flow field
 bool distance_available
 
