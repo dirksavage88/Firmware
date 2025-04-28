@@ -308,11 +308,11 @@ int px4_mtd_config(const px4_mtd_manifest_t *mft_mtd)
 
 		instances[i] = new mtd_instance_s;
 
-		if (instances == nullptr) {
-memoryout:
-			PX4_ERR("failed to allocate memory!");
-			return rv;
-		}
+// 		if (instances == nullptr) {
+// memoryout:
+// 			PX4_ERR("failed to allocate memory!");
+// 			return rv;
+// 		}
 
 		num_instances++;
 
@@ -324,27 +324,27 @@ memoryout:
 		rv = -ENOMEM;
 		instances[i]->part_dev = new FAR struct mtd_dev_s *[nparts];
 
-		if (instances[i]->part_dev == nullptr) {
-			goto memoryout;
-		}
+		// if (instances[i]->part_dev == nullptr) {
+		// 	goto memoryout;
+		// }
 
 		instances[i]->partition_block_counts = new int[nparts];
 
-		if (instances[i]->partition_block_counts == nullptr) {
-			goto memoryout;
-		}
+		// if (instances[i]->partition_block_counts == nullptr) {
+		// 	goto memoryout;
+		// }
 
 		instances[i]->partition_types = new int[nparts];
 
-		if (instances[i]->partition_types == nullptr) {
-			goto memoryout;
-		}
+		// if (instances[i]->partition_types == nullptr) {
+		// 	goto memoryout;
+		// }
 
 		instances[i]->partition_names = new const char *[nparts];
 
-		if (instances[i]->partition_names == nullptr) {
-			goto memoryout;
-		}
+		// if (instances[i]->partition_names == nullptr) {
+		// 	goto memoryout;
+		// }
 
 		for (uint32_t p = 0; p < nparts; p++) {
 			instances[i]->partition_block_counts[p] =  mtd_list->entries[num_entry]->partd[p].nblocks;
@@ -444,41 +444,42 @@ __EXPORT int px4_mtd_query(const char *sub, const char *val, const char **get)
 {
 	int rv = -ENODEV;
 
-	if (instances != nullptr) {
+	// if (instances) {
 
-		static const char *keys[] = PX4_MFT_MTD_STR_TYPES;
-		static const px4_mtd_types_t types[] = PX4_MFT_MTD_TYPES;
-		int key = 0;
+	static const char *keys[] = PX4_MFT_MTD_STR_TYPES;
+	static const px4_mtd_types_t types[] = PX4_MFT_MTD_TYPES;
+	int key = 0;
 
-		for (unsigned int k = 0; k < arraySize(keys); k++) {
-			if (!strcmp(keys[k], sub)) {
-				key = types[k];
-				break;
-			}
+	for (unsigned int k = 0; k < arraySize(keys); k++) {
+		if (!strcmp(keys[k], sub)) {
+			key = types[k];
+			break;
 		}
+	}
 
 
-		rv = -EINVAL;
+	rv = -EINVAL;
 
-		if (key != 0) {
-			rv = -ENOENT;
+	if (key != 0) {
+		rv = -ENOENT;
 
-			for (int i = 0; i < num_instances; i++) {
-				for (unsigned n = 0; n < instances[i]->n_partitions_current; n++) {
-					if (instances[i]->partition_types[n] == key) {
-						if (get != nullptr && val == nullptr) {
-							*get =  instances[i]->partition_names[n];
-							return 0;
-						}
+		for (int i = 0; i < num_instances; i++) {
+			for (unsigned n = 0; n < instances[i]->n_partitions_current; n++) {
+				if (instances[i]->partition_types[n] == key) {
+					if (get != nullptr && val == nullptr) {
+						*get =  instances[i]->partition_names[n];
+						return 0;
+					}
 
-						if (val != nullptr && strcmp(instances[i]->partition_names[n], val) == 0) {
-							return 0;
-						}
+					if (val != nullptr && strcmp(instances[i]->partition_names[n], val) == 0) {
+						return 0;
 					}
 				}
 			}
 		}
 	}
+
+	// }
 
 	return rv;
 }
