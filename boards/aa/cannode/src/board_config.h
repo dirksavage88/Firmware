@@ -66,9 +66,10 @@
 #define GPIO_USART2_TX_GPIO                                                    \
 	(GPIO_OUTPUT | GPIO_SPEED_50MHz | GPIO_PORTA | GPIO_PIN2)
 
-// #define GPIO_USART3_RX_GPIO
-// (GPIO_INPUT|GPIO_SPEED_50MHz|GPIO_PORTB|GPIO_PIN11) #define
-// GPIO_USART3_TX_GPIO     (GPIO_OUTPUT|GPIO_SPEED_50MHz|GPIO_PORTB|GPIO_PIN10)
+#define GPIO_USART3_RX_GPIO                                                    \
+	(GPIO_INPUT |GPIO_SPEED_50MHz|GPIO_PORTB|GPIO_PIN11)
+#define GPIO_USART3_TX_GPIO                                                    \
+	(GPIO_OUTPUT|GPIO_SPEED_50MHz|GPIO_PORTB|GPIO_PIN10)
 
 #define GPIO_UART4_RX_GPIO                                                     \
 	(GPIO_INPUT | GPIO_SPEED_50MHz | GPIO_PORTC | GPIO_PIN11)

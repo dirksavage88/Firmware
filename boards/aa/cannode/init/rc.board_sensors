@@ -10,8 +10,8 @@ gps start -d /dev/ttyS1 -p ubx
 
 # compasses
 
-qmc5883l -X -q start
-#rm3100 -X -q start
+# qmc5883l -X -q start
+rm3100 -X -q start
 
 # Mag bias estimator
 if param compare -s MBE_ENABLE 1
