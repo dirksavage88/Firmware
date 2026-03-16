@@ -5499,7 +5499,7 @@ Note that non-motor outputs might already be active in prearm state if COM_PREAR
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 128      | 128      |           | 128     |      |
+| &nbsp; | 127      | 127      |           | 127     |      |
 
 ### RBCLW_DIS2 (`INT32`) {#RBCLW_DIS2}
 
@@ -5513,7 +5513,7 @@ Note that non-motor outputs might already be active in prearm state if COM_PREAR
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 128      | 128      |           | 128     |      |
+| &nbsp; | 127      | 127      |           | 127     |      |
 
 ### RBCLW_FAIL1 (`INT32`) {#RBCLW_FAIL1}
 
@@ -5701,7 +5701,7 @@ Maxmimum output value (when not disarmed).
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 128      | 256      |           | 256     |      |
+| &nbsp; | 127      | 254      |           | 254     |      |
 
 ### RBCLW_MAX2 (`INT32`) {#RBCLW_MAX2}
 
@@ -5713,7 +5713,7 @@ Maxmimum output value (when not disarmed).
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 128      | 256      |           | 256     |      |
+| &nbsp; | 127      | 254      |           | 254     |      |
 
 ### RBCLW_MIN1 (`INT32`) {#RBCLW_MIN1}
 
@@ -5725,7 +5725,7 @@ Minimum output value (when not disarmed).
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 1        | 128      |           | 1       |      |
+| &nbsp; | 0        | 127      |           | 0       |      |
 
 ### RBCLW_MIN2 (`INT32`) {#RBCLW_MIN2}
 
@@ -5737,7 +5737,7 @@ Minimum output value (when not disarmed).
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 1        | 128      |           | 1       |      |
+| &nbsp; | 0        | 127      |           | 0       |      |
 
 ### RBCLW_REV (`INT32`) {#RBCLW_REV}
 
