@@ -162,7 +162,9 @@ Elevator control on the other hand is energy conservative, and is thus used for 
 $$\dot{B} = \gamma - \frac{\dot{V_T}}{g}$$
 
 ## Fixed-Wing Attitude Controller
+
 ### Setpoint modificaiton
+
 Most fixed-wing aircraft cannot generate a sustained yaw rate using the rudder alone. As a result, the yaw component of the quaternion attitude error should be removed before computing the control action.
 
 This is achieved by premultiplying the setpoint quaternion with a rotation about the global down axis. The additional rotation cancels the yaw component of the attitude error while preserving the roll and pitch components.
@@ -219,7 +221,7 @@ In order to keep a constant rate, this damping can be compensated using feedforw
 
 ### Turn coordination
 
-The  yaw rate setpoint is generated using the turn coordination constraint in order to minimize lateral acceleration, generated when the aircraft is slipping.
+The yaw rate setpoint is generated using the turn coordination constraint in order to minimize lateral acceleration, generated when the aircraft is slipping.
 
 $$r_{sp} = \frac{2g}{V_T}\left(q_0 q_1 + q_2 q_3\right)$$
 
