@@ -199,6 +199,16 @@ param_modify_on_import_ret param_modify_on_import(bson_node_t node)
 		}
 	}
 
+	// 2026-03-11: translate EKF2_GPS_DELAY to SENS_GPS0_DELAY and SENS_GPS1_DELAY
+	{
+		if (strcmp("EKF2_GPS_DELAY", node->name) == 0) {
+			int32_t delay_ms = static_cast<int32_t>(node->d);
+			param_set(param_find("SENS_GPS0_DELAY"), &delay_ms);
+			param_set(param_find("SENS_GPS1_DELAY"), &delay_ms);
+			PX4_INFO("migrating %s -> %s, %s", "EKF2_GPS_DELAY", "SENS_GPS0_DELAY", "SENS_GPS1_DELAY");
+		}
+	}
+
 	// 2026-03-11: translate MOT_POLE_COUNT to per-motor DSHOT_MOT_POL1-12
 	{
 		if ((node->type == bson_type_t::BSON_INT32) && (strcmp("MOT_POLE_COUNT", node->name) == 0)) {
