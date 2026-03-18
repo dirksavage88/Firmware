@@ -20494,36 +20494,6 @@ Automatic: reset on fusion timeout if no other source of position is available. 
 | ------ | -------- | -------- | --------- | ------- | ---- |
 | &nbsp; |          |          |           | 0       |      |
 
-### EKF2_GPS_POS_X (`FLOAT`) {#EKF2_GPS_POS_X}
-
-X position of GPS antenna in body frame.
-
-Forward (roll) axis with origin relative to vehicle centre of gravity
-
-| Reboot | minValue | maxValue | increment | default | unit |
-| ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; |          |          |           | 0.0     | m    |
-
-### EKF2_GPS_POS_Y (`FLOAT`) {#EKF2_GPS_POS_Y}
-
-Y position of GPS antenna in body frame.
-
-Right (pitch) axis with origin relative to vehicle centre of gravity
-
-| Reboot | minValue | maxValue | increment | default | unit |
-| ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; |          |          |           | 0.0     | m    |
-
-### EKF2_GPS_POS_Z (`FLOAT`) {#EKF2_GPS_POS_Z}
-
-Z position of GPS antenna in body frame.
-
-Down (yaw) axis with origin relative to vehicle centre of gravity
-
-| Reboot | minValue | maxValue | increment | default | unit |
-| ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; |          |          |           | 0.0     | m    |
-
 ### EKF2_GPS_P_GATE (`FLOAT`) {#EKF2_GPS_P_GATE}
 
 Gate size for GNSS position fusion.
@@ -37358,14 +37328,103 @@ Configure on which serial port to run FT Technologies Digital Wind Sensor (seria
 | ------- | -------- | -------- | --------- | ------- | ---- |
 | &check; |          |          |           | 0       |      |
 
+### SENS_GPS0_ID (`INT32`) {#SENS_GPS0_ID}
+
+GPS 0 device ID.
+
+Device ID of the GPS receiver for antenna offset slot 0.
+Set to 0 to disable this slot. When all slots are 0, offsets are
+matched by uORB instance index (only reliable for serial GPS).
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; |          |          |           | 0       |      |
+
+### SENS_GPS0_OFFX (`FLOAT`) {#SENS_GPS0_OFFX}
+
+GPS 0 antenna X position.
+
+Forward axis relative to vehicle centre of gravity.
+Matched to physical GPS receiver via SENS_GPS0_ID.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; |          |          |           | 0.0     | m    |
+
+### SENS_GPS0_OFFY (`FLOAT`) {#SENS_GPS0_OFFY}
+
+GPS 0 antenna Y position.
+
+Right axis relative to vehicle centre of gravity.
+Matched to physical GPS receiver via SENS_GPS0_ID.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; |          |          |           | 0.0     | m    |
+
+### SENS_GPS0_OFFZ (`FLOAT`) {#SENS_GPS0_OFFZ}
+
+GPS 0 antenna Z position.
+
+Down axis relative to vehicle centre of gravity.
+Matched to physical GPS receiver via SENS_GPS0_ID.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; |          |          |           | 0.0     | m    |
+
+### SENS_GPS1_ID (`INT32`) {#SENS_GPS1_ID}
+
+GPS 1 device ID.
+
+Device ID of the GPS receiver for antenna offset slot 1.
+Set to 0 to disable this slot. When all slots are 0, offsets are
+matched by uORB instance index (only reliable for serial GPS).
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; |          |          |           | 0       |      |
+
+### SENS_GPS1_OFFX (`FLOAT`) {#SENS_GPS1_OFFX}
+
+GPS 1 antenna X position.
+
+Forward axis relative to vehicle centre of gravity.
+Matched to physical GPS receiver via SENS_GPS1_ID.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; |          |          |           | 0.0     | m    |
+
+### SENS_GPS1_OFFY (`FLOAT`) {#SENS_GPS1_OFFY}
+
+GPS 1 antenna Y position.
+
+Right axis relative to vehicle centre of gravity.
+Matched to physical GPS receiver via SENS_GPS1_ID.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; |          |          |           | 0.0     | m    |
+
+### SENS_GPS1_OFFZ (`FLOAT`) {#SENS_GPS1_OFFZ}
+
+GPS 1 antenna Z position.
+
+Down axis relative to vehicle centre of gravity.
+Matched to physical GPS receiver via SENS_GPS1_ID.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; |          |          |           | 0.0     | m    |
+
 ### SENS_GPS_MASK (`INT32`) {#SENS_GPS_MASK}
 
 Multi GPS Blending Control Mask.
 
-Set bits in the following positions to set which GPS accuracy metrics will be used to calculate the blending weight. Set to zero to disable and always used first GPS instance.
-0 : Set to true to use speed accuracy
-1 : Set to true to use horizontal position accuracy
-2 : Set to true to use vertical position accuracy
+Set bits in the following positions to set which GPS accuracy metrics will
+be used to calculate the blending weight. Set to zero to disable and always
+used first GPS instance.
 
 **Bitmask:**
 
@@ -37386,11 +37445,7 @@ The GPS selection logic waits until the primary receiver is available to
 send data to the EKF even if a secondary instance is already available.
 The secondary instance is then only used if the primary one times out.
 
-Accepted values:
--1 : Auto (equal priority for all instances)
-0 : Main serial GPS instance
-1 : Secondary serial GPS instance
-2-127 : UAVCAN module node ID
+To select a DroneCAN GPS, set this to the node ID.
 
 This parameter has no effect if blending is active.
 
@@ -37402,7 +37457,9 @@ This parameter has no effect if blending is active.
 
 Multi GPS Blending Time Constant.
 
-Sets the longest time constant that will be applied to the calculation of GPS position and height offsets used to correct data from multiple GPS data for steady state position differences.
+Sets the longest time constant that will be applied to the calculation of GPS
+position and height offsets used to correct data from multiple GPS data for
+steady state position differences.
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
