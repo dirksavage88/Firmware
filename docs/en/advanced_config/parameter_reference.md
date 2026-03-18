@@ -20469,16 +20469,6 @@ Set bits in the following positions to enable: 0 : Longitude and latitude fusion
 | ------ | -------- | -------- | --------- | ------- | ---- |
 | &nbsp; | 0        | 15       |           | 7       |      |
 
-### EKF2_GPS_DELAY (`FLOAT`) {#EKF2_GPS_DELAY}
-
-GPS measurement delay relative to IMU measurement.
-
-GPS measurement delay relative to IMU measurement if PPS time correction is not available/enabled (PPS_CAP_ENABLE).
-
-| Reboot  | minValue | maxValue | increment | default | unit |
-| ------- | -------- | -------- | --------- | ------- | ---- |
-| &check; | 0        | 300      |           | 110     | ms   |
-
 ### EKF2_GPS_MODE (`INT32`) {#EKF2_GPS_MODE}
 
 Fusion reset mode.
@@ -37328,6 +37318,19 @@ Configure on which serial port to run FT Technologies Digital Wind Sensor (seria
 | ------- | -------- | -------- | --------- | ------- | ---- |
 | &check; |          |          |           | 0       |      |
 
+### SENS_GPS0_DELAY (`INT32`) {#SENS_GPS0_DELAY}
+
+GPS 0 measurement delay.
+
+GPS measurement delay relative to IMU measurements.
+Matched to physical GPS receiver via SENS_GPS0_ID.
+Only applied when the GPS driver does not provide its own
+timestamp_sample correction.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 0        | 300      |           | 110     | ms   |
+
 ### SENS_GPS0_ID (`INT32`) {#SENS_GPS0_ID}
 
 GPS 0 device ID.
@@ -37372,6 +37375,19 @@ Matched to physical GPS receiver via SENS_GPS0_ID.
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
 | &nbsp; |          |          |           | 0.0     | m    |
+
+### SENS_GPS1_DELAY (`INT32`) {#SENS_GPS1_DELAY}
+
+GPS 1 measurement delay.
+
+GPS measurement delay relative to IMU measurements.
+Matched to physical GPS receiver via SENS_GPS1_ID.
+Only applied when the GPS driver does not provide its own
+timestamp_sample correction.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 0        | 300      |           | 110     | ms   |
 
 ### SENS_GPS1_ID (`INT32`) {#SENS_GPS1_ID}
 
