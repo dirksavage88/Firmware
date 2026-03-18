@@ -178,6 +178,27 @@ param_modify_on_import_ret param_modify_on_import(bson_node_t node)
 		}
 	}
 
+	// 2026-03-11: translate EKF2_GPS_POS_X/Y/Z -> SENS_GPS0_OFFX/OFFY/OFFZ
+	{
+		if (strcmp("EKF2_GPS_POS_X", node->name) == 0) {
+			strcpy(node->name, "SENS_GPS0_OFFX");
+			PX4_INFO("migrating %s -> %s", "EKF2_GPS_POS_X", "SENS_GPS0_OFFX");
+			return param_modify_on_import_ret::PARAM_MODIFIED;
+		}
+
+		if (strcmp("EKF2_GPS_POS_Y", node->name) == 0) {
+			strcpy(node->name, "SENS_GPS0_OFFY");
+			PX4_INFO("migrating %s -> %s", "EKF2_GPS_POS_Y", "SENS_GPS0_OFFY");
+			return param_modify_on_import_ret::PARAM_MODIFIED;
+		}
+
+		if (strcmp("EKF2_GPS_POS_Z", node->name) == 0) {
+			strcpy(node->name, "SENS_GPS0_OFFZ");
+			PX4_INFO("migrating %s -> %s", "EKF2_GPS_POS_Z", "SENS_GPS0_OFFZ");
+			return param_modify_on_import_ret::PARAM_MODIFIED;
+		}
+	}
+
 	// 2026-03-11: translate MOT_POLE_COUNT to per-motor DSHOT_MOT_POL1-12
 	{
 		if ((node->type == bson_type_t::BSON_INT32) && (strcmp("MOT_POLE_COUNT", node->name) == 0)) {
