@@ -4202,6 +4202,9 @@ Custom PWM rates can be used by directly setting any value >0.
 
 **Values:**
 
+- `-8`: BDShot150
+- `-7`: BDShot300
+- `-6`: BDShot600
 - `-5`: DShot150
 - `-4`: DShot300
 - `-3`: DShot600
@@ -19499,17 +19502,32 @@ When mixer outputs 1000 or value inside DSHOT 3D deadband, DShot 0 is sent.
 | ------ | -------- | -------- | --------- | ------------ | ---- |
 | &nbsp; |          |          |           | Disabled (0) |      |
 
-### DSHOT_BIDIR_EN (`INT32`) {#DSHOT_BIDIR_EN}
+### DSHOT_BIDIR_EDT (`INT32`) {#DSHOT_BIDIR_EDT}
 
-Enable bidirectional DShot.
+Enable Extended DShot Telemetry.
 
-This parameter enables bidirectional DShot which provides RPM feedback.
-Note that this requires ESCs that support bidirectional DSHot, e.g. BlHeli32.
-This is not the same as DShot telemetry which requires an additional serial connection.
+This parameter enables Extended DShot Telemetry which allows transmission of
+additional telemetry within the eRPM frame. The EDT data is interleaved with
+the eRPM frames at a low rate.
 
 | Reboot  | minValue | maxValue | increment | default      | unit |
 | ------- | -------- | -------- | --------- | ------------ | ---- |
 | &check; |          |          |           | Disabled (0) |      |
+
+### DSHOT_ESC_TYPE (`INT32`) {#DSHOT_ESC_TYPE}
+
+ESC Type.
+
+The ESC firmware type
+
+**Values:**
+
+- `0`: Unknown
+- `1`: AM32
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; |          |          |           | 0       |      |
 
 ### DSHOT_MIN (`FLOAT`) {#DSHOT_MIN}
 
@@ -19522,6 +19540,174 @@ armed.
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
 | &nbsp; | 0        | 1        | 0.01      | 0.055   | norm |
+
+### DSHOT_MOT_POL1 (`INT32`) {#DSHOT_MOT_POL1}
+
+Number of magnetic poles of motor 1.
+
+Number of magnetic poles for motor 1.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL10 (`INT32`) {#DSHOT_MOT_POL10}
+
+Number of magnetic poles of motor 10.
+
+Number of magnetic poles for motor 10.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL11 (`INT32`) {#DSHOT_MOT_POL11}
+
+Number of magnetic poles of motor 11.
+
+Number of magnetic poles for motor 11.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL12 (`INT32`) {#DSHOT_MOT_POL12}
+
+Number of magnetic poles of motor 12.
+
+Number of magnetic poles for motor 12.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL2 (`INT32`) {#DSHOT_MOT_POL2}
+
+Number of magnetic poles of motor 2.
+
+Number of magnetic poles for motor 2.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL3 (`INT32`) {#DSHOT_MOT_POL3}
+
+Number of magnetic poles of motor 3.
+
+Number of magnetic poles for motor 3.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL4 (`INT32`) {#DSHOT_MOT_POL4}
+
+Number of magnetic poles of motor 4.
+
+Number of magnetic poles for motor 4.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL5 (`INT32`) {#DSHOT_MOT_POL5}
+
+Number of magnetic poles of motor 5.
+
+Number of magnetic poles for motor 5.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL6 (`INT32`) {#DSHOT_MOT_POL6}
+
+Number of magnetic poles of motor 6.
+
+Number of magnetic poles for motor 6.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL7 (`INT32`) {#DSHOT_MOT_POL7}
+
+Number of magnetic poles of motor 7.
+
+Number of magnetic poles for motor 7.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL8 (`INT32`) {#DSHOT_MOT_POL8}
+
+Number of magnetic poles of motor 8.
+
+Number of magnetic poles for motor 8.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
+
+### DSHOT_MOT_POL9 (`INT32`) {#DSHOT_MOT_POL9}
+
+Number of magnetic poles of motor 9.
+
+Number of magnetic poles for motor 9.
+Required to compute RPM from the eRPM returned by ESC telemetry.
+Either get the number from the motor spec sheet or count the magnets
+on the bell of the motor (not the stator magnets).
+Typical motors for 5 inch props have 14 poles.
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 2        | 400      |           | 14      |      |
 
 ### DSHOT_TEL_CFG (`INT32`) {#DSHOT_TEL_CFG}
 
@@ -19547,20 +19733,6 @@ Configure on which serial port to run DShot Driver.
 | Reboot  | minValue | maxValue | increment | default | unit |
 | ------- | -------- | -------- | --------- | ------- | ---- |
 | &check; |          |          |           | 0       |      |
-
-### MOT_POLE_COUNT (`INT32`) {#MOT_POLE_COUNT}
-
-Number of magnetic poles of the motors.
-
-Specify the number of magnetic poles of the motors.
-It is required to compute the RPM value from the eRPM returned with the ESC telemetry.
-
-Either get the number from the motor spec sheet or count the magnets on the bell of the motor (not the stator magnets).
-Typical motors for 5 inch props have 14 poles.
-
-| Reboot | minValue | maxValue | increment | default | unit |
-| ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; |          |          |           | 14      |      |
 
 ## EKF2
 
