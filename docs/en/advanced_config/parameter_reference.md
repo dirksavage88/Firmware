@@ -18661,17 +18661,6 @@ After this amount of seconds without datalink the data link lost mode triggers
 | ------ | -------- | -------- | --------- | ------- | ---- |
 | &nbsp; | 60       | 3600     |           | 120     | s    |
 
-### COM_HLDL_REG_T (`INT32`) {#COM_HLDL_REG_T}
-
-High Latency Datalink regain time threshold.
-
-After a data link loss: after this number of seconds with a healthy datalink the 'datalink loss'
-flag is set back to false
-
-| Reboot | minValue | maxValue | increment | default | unit |
-| ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 0        | 60       |           | 0       | s    |
-
 ### COM_HOME_EN (`INT32`) {#COM_HOME_EN}
 
 Home position enabled.
