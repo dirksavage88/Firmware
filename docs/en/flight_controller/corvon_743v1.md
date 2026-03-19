@@ -18,6 +18,7 @@ The board uses [Pixhawk Autopilot Standard Connections](https://docs.px4.io/main
 ::: info
 This flight controller is [manufacturer supported](../flight_controller/autopilot_manufacturer_supported.md).
 :::
+
 ## Key Features
 
 - **MCU:** STM32H743VIT6 MCU (32 Bit Arm® Cortex®-M7, 480MHz, 2MB Flash, 1MB RAM)
@@ -32,7 +33,7 @@ This flight controller is [manufacturer supported](../flight_controller/autopilo
   - Dedicated RC Input (UART6)
   - 10x PWM outputs (DShot & Bi-Directional DShot supported)
   - Dedicated DJI O3 Air Unit connector
-- **Power:** 
+- **Power:**
   - 9V 3A BEC
   - 5V 3A BEC
   - ADC for battery voltage (up to 6S) and current monitoring
@@ -62,6 +63,7 @@ Order from [CORVON](https://corvon.tech).
 ### Power Configuration
 
 The board has an internal voltage sensor and connections on the ESC connector for an external current sensor.
+
 - The voltage sensor handles up to 6S LiPo batteries.
 - Two onboard BECs provide robust peripheral power (9V 3A and 5V 3A).
 
@@ -83,15 +85,16 @@ The following image shows the port connection details, including RC, UARTs, CAN,
 | USART6 | RC                | RC Input      |
 | UART7  | TELEM4            | ESC Telemetry |
 
-### Debug Port 
+### Debug Port
 
 The board features a **4-pin SWD Debug** interface located on the right side of the board. This includes `SWCLK`, `SWDIO`, `3V3`, and `GND` for full hardware debugging. While a dedicated UART isn't strictly reserved for the NSH console by default, the full-speed USB connection provides MAVLink Console access out of the box.
 
 ### RC Input
 
-RC Input is mapped to **UART6** via the explicit `SBUS/CRSF` connector block. 
+RC Input is mapped to **UART6** via the explicit `SBUS/CRSF` connector block.
+
 - It fully supports PX4's standard `RC_INPUT` module protocols.
-- The connector exposes both `RX6` and `TX6`, which makes it fully capable of bidirectional receiver protocols such as TBS Crossfire (CRSF), ELRS, and FPort, as well as traditional single-wire standards like SBUS (which operates inverted on RX6). 
+- The connector exposes both `RX6` and `TX6`, which makes it fully capable of bidirectional receiver protocols such as TBS Crossfire (CRSF), ELRS, and FPort, as well as traditional single-wire standards like SBUS (which operates inverted on RX6).
 
 ## Building/Loading Firmware
 
