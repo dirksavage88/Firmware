@@ -22316,7 +22316,7 @@ Factor applied to the minimum and stall airspeed when flaps are fully deployed.
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 0.5      | 1        | 0.01      | 1.      |      |
+| &nbsp; | 0.5      | 1        | 0.01      | 1.0     |      |
 
 ### FW_AIRSPD_MAX (`FLOAT`) {#FW_AIRSPD_MAX}
 
@@ -22390,7 +22390,7 @@ Set to 0 to disable mapping of airspeed to trim throttle.
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 0        | 1        | 0.01      | 0.      |      |
+| &nbsp; | 0        | 1        | 0.01      | 0.0     |      |
 
 ### FW_THR_ASPD_MIN (`FLOAT`) {#FW_THR_ASPD_MIN}
 
@@ -22402,7 +22402,7 @@ Set to 0 to disable mapping of airspeed to trim throttle below FW_AIRSPD_TRIM.
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 0        | 1        | 0.01      | 0.      |      |
+| &nbsp; | 0        | 1        | 0.01      | 0.0     |      |
 
 ### FW_THR_TRIM (`FLOAT`) {#FW_THR_TRIM}
 
@@ -23289,7 +23289,9 @@ When set to 0 (default), default minimum satellite signal level set by u-blox wl
 
 ### GPS_UBX_MIN_ELEV (`INT32`) {#GPS_UBX_MIN_ELEV}
 
-u-blox GPS minimum elevation for a GNSS satellite to be used in navigation.
+u-blox GPS minimum satellite elevation angle.
+
+u-blox GPS minimum elevation for a GNSS satellite to be used in navigation
 
 When set to 0 (default), default minimum elevation set by u-blox will be used.
 
@@ -23371,7 +23373,7 @@ from the top).
 
 | Reboot  | minValue | maxValue | increment | default | unit |
 | ------- | -------- | -------- | --------- | ------- | ---- |
-| &check; | 0        | 360      |           | 0.      | deg  |
+| &check; | 0        | 360      |           | 0.0     | deg  |
 
 ### PPS_CAP_ENABLE (`INT32`) {#PPS_CAP_ENABLE}
 
@@ -26672,7 +26674,9 @@ Configure on which serial port to run Iridium (with MAVLink).
 
 ### ISBD_READ_INT (`INT32`) {#ISBD_READ_INT}
 
-Satellite radio read interval. Only required to be nonzero if data is not sent using a ring call.
+Iridium SBD read interval.
+
+Satellite radio read interval. Only required to be nonzero if data is not sent using a ring call
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
@@ -26688,7 +26692,9 @@ Iridium SBD session timeout.
 
 ### ISBD_STACK_TIME (`INT32`) {#ISBD_STACK_TIME}
 
-Time the Iridium driver will wait for additional mavlink messages to combine them into one SBD message.
+Iridium SBD message stacking wait time.
+
+Time the Iridium driver will wait for additional mavlink messages to combine them into one SBD message
 
 Value 0 turns the functionality off
 
@@ -28889,7 +28895,9 @@ control output and mixer saturation.
 
 ### CP_DELAY (`FLOAT`) {#CP_DELAY}
 
-Average delay of the range sensor message plus the tracking delay of the position controller in seconds.
+Range sensor and position controller average delay.
+
+Average delay of the range sensor message plus the tracking delay of the position controller in seconds
 
 Only used in Position mode.
 
@@ -28909,7 +28917,9 @@ Only used in Position mode. Collision avoidance is disabled by setting this para
 
 ### CP_GO_NO_DATA (`INT32`) {#CP_GO_NO_DATA}
 
-Boolean to allow moving into directions where there is no sensor data (outside FOV).
+Allow moving into directions without sensor data.
+
+Boolean to allow moving into directions where there is no sensor data (outside FOV)
 
 Only used in Position mode.
 
@@ -28919,13 +28929,15 @@ Only used in Position mode.
 
 ### CP_GUIDE_ANG (`FLOAT`) {#CP_GUIDE_ANG}
 
-Angle left/right from the commanded setpoint by which the collision prevention algorithm can choose to change the setpoint direction.
+Collision prevention guidance angle.
+
+Angle left/right from the commanded setpoint by which the collision prevention algorithm can choose to change the setpoint direction
 
 Only used in Position mode.
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 0        | 90       |           | 30.     | deg  |
+| &nbsp; | 0        | 90       |           | 30.0    | deg  |
 
 ### MC_MAN_TILT_TAU (`FLOAT`) {#MC_MAN_TILT_TAU}
 
@@ -35924,17 +35936,17 @@ INA220 Power Monitor Regulator Max Current.
 
 INA220 Power Monitor Battery Shunt.
 
-| Reboot | minValue    | maxValue | increment  | default | unit |
-| ------ | ----------- | -------- | ---------- | ------- | ---- |
-| &nbsp; | 0.000000001 | 0.1      | .000000001 | 0.0005  |      |
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 1e-09    | 0.1      | 1e-09     | 0.0005  |      |
 
 ### INA220_SHUNT_REG (`FLOAT`) {#INA220_SHUNT_REG}
 
 INA220 Power Monitor Regulator Shunt.
 
-| Reboot | minValue    | maxValue | increment  | default | unit |
-| ------ | ----------- | -------- | ---------- | ------- | ---- |
-| &nbsp; | 0.000000001 | 0.1      | .000000001 | 0.0005  |      |
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 1e-09    | 0.1      | 1e-09     | 0.0005  |      |
 
 ### INA226_CONFIG (`INT32`) {#INA226_CONFIG}
 
@@ -35956,9 +35968,9 @@ INA226 Power Monitor Max Current.
 
 INA226 Power Monitor Shunt.
 
-| Reboot  | minValue    | maxValue | increment  | default | unit |
-| ------- | ----------- | -------- | ---------- | ------- | ---- |
-| &check; | 0.000000001 | 0.1      | .000000001 | 0.0005  |      |
+| Reboot  | minValue | maxValue | increment | default | unit |
+| ------- | -------- | -------- | --------- | ------- | ---- |
+| &check; | 1e-09    | 0.1      | 1e-09     | 0.0005  |      |
 
 ### INA228_CONFIG (`INT32`) {#INA228_CONFIG}
 
@@ -35980,9 +35992,9 @@ INA228 Power Monitor Max Current.
 
 INA228 Power Monitor Shunt.
 
-| Reboot  | minValue    | maxValue | increment  | default | unit |
-| ------- | ----------- | -------- | ---------- | ------- | ---- |
-| &check; | 0.000000001 | 0.1      | .000000001 | 0.0005  |      |
+| Reboot  | minValue | maxValue | increment | default | unit |
+| ------- | -------- | -------- | --------- | ------- | ---- |
+| &check; | 1e-09    | 0.1      | 1e-09     | 0.0005  |      |
 
 ### INA238_CURRENT (`FLOAT`) {#INA238_CURRENT}
 
@@ -35996,9 +36008,9 @@ INA238 Power Monitor Max Current.
 
 INA238 Power Monitor Shunt.
 
-| Reboot  | minValue    | maxValue | increment  | default | unit |
-| ------- | ----------- | -------- | ---------- | ------- | ---- |
-| &check; | 0.000000001 | 0.1      | .000000001 | 0.0005  |      |
+| Reboot  | minValue | maxValue | increment | default | unit |
+| ------- | -------- | -------- | --------- | ------- | ---- |
+| &check; | 1e-09    | 0.1      | 1e-09     | 0.0005  |      |
 
 ### MS_ACCEL_RANGE (`INT32`) {#MS_ACCEL_RANGE}
 
@@ -38465,17 +38477,17 @@ INS or sensors
 
 VOXL Power Monitor Shunt, Battery.
 
-| Reboot  | minValue    | maxValue | increment  | default | unit |
-| ------- | ----------- | -------- | ---------- | ------- | ---- |
-| &check; | 0.000000001 | 0.1      | .000000001 | 0.00063 |      |
+| Reboot  | minValue | maxValue | increment | default | unit |
+| ------- | -------- | -------- | --------- | ------- | ---- |
+| &check; | 1e-09    | 0.1      | 1e-09     | 0.00063 |      |
 
 ### VOXLPM_SHUNT_REG (`FLOAT`) {#VOXLPM_SHUNT_REG}
 
 VOXL Power Monitor Shunt, Regulator.
 
-| Reboot  | minValue    | maxValue | increment  | default | unit |
-| ------- | ----------- | -------- | ---------- | ------- | ---- |
-| &check; | 0.000000001 | 0.1      | .000000001 | 0.0056  |      |
+| Reboot  | minValue | maxValue | increment | default | unit |
+| ------- | -------- | -------- | --------- | ------- | ---- |
+| &check; | 1e-09    | 0.1      | 1e-09     | 0.0056  |      |
 
 ## Septentrio
 
@@ -40696,7 +40708,7 @@ Set to 0 to disable, 1 for maximum brightness
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; |          |          |           | 1.      | %    |
+| &nbsp; |          |          |           | 1.0     | %    |
 
 ### SYS_STCK_EN (`INT32`) {#SYS_STCK_EN}
 
@@ -44173,7 +44185,7 @@ UART ESC Turtle Mode Cosphi.
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
-| &nbsp; | 0.000    | 1.000    | 0.001     | 0.990   |      |
+| &nbsp; | 0.0      | 1.0      | 0.001     | 0.99    |      |
 
 ### VOXL_ESC_T_DEAD (`INT32`) {#VOXL_ESC_T_DEAD}
 
