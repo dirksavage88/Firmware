@@ -28310,6 +28310,19 @@ clockwise, negative for counter-clockwise.
 | ------ | -------- | -------- | --------- | ------- | ---- |
 | &nbsp; | -10000   | 10000    | 0.5       | 80.0    | m    |
 
+### NAV_LTR_LAST_DL (`INT32`) {#NAV_LTR_LAST_DL}
+
+Loiter at last GCS heartbeat position on data link loss.
+
+When the data link is lost and this setting is enabled,
+the vehicle will loiter at the position where the last GCS
+heartbeat was received rather than at its current position.
+Only applies to Hold mode during failsafe actions.
+
+| Reboot | minValue | maxValue | increment | default      | unit |
+| ------ | -------- | -------- | --------- | ------------ | ---- |
+| &nbsp; |          |          |           | Disabled (0) |      |
+
 ### NAV_MC_ALT_RAD (`FLOAT`) {#NAV_MC_ALT_RAD}
 
 MC Altitude Acceptance Radius.
