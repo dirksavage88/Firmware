@@ -18662,6 +18662,18 @@ disabled, warn only or deny arming.
 | ------ | -------- | -------- | --------- | ------- | ---- |
 | &nbsp; |          |          |           | 0       |      |
 
+### COM_ARM_ON_BOOT (`INT32`) {#COM_ARM_ON_BOOT}
+
+Arm automatically on boot.
+
+When enabled, the vehicle arms automatically once all preflight checks pass after boot.
+The vehicle will not re-arm after a manual disarm.
+Has no effect if COM_ARMABLE is 0.
+
+| Reboot  | minValue | maxValue | increment | default      | unit |
+| ------- | -------- | -------- | --------- | ------------ | ---- |
+| &check; |          |          |           | Disabled (0) |      |
+
 ### COM_ARM_SDCARD (`INT32`) {#COM_ARM_SDCARD}
 
 Enable FMU SD card detection check.

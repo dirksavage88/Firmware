@@ -109,8 +109,8 @@ A vehicle that arms automatically can spin up motors and actuators without any o
 Ensure the vehicle is in a safe state before powering on.
 :::
 
-| Parameter                                                                                                      | Description                                                                                    |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Parameter                                                                                                | Description                                                                       |
+| -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | <a id="COM_ARM_ON_BOOT"></a>[COM_ARM_ON_BOOT](../advanced_config/parameter_reference.md#COM_ARM_ON_BOOT) | Arm automatically once preflight checks pass after boot. Default: `0` (Disabled). |
 
 ## Pre-Arm Checks
