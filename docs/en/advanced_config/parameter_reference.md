@@ -22258,7 +22258,7 @@ Also applies to flaperons if enabled in the mixer/allocation.
 
 Trigger time.
 
-Launch is detected when acceleration in body forward direction is above FW_LAUN_AC_THLD for FW_LAUN_AC_T seconds.
+Launch is detected when the norm of body acceleration is above FW_LAUN_AC_THLD for FW_LAUN_AC_T seconds.
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
@@ -22268,7 +22268,7 @@ Launch is detected when acceleration in body forward direction is above FW_LAUN_
 
 Trigger acceleration threshold.
 
-Launch is detected when acceleration in body forward direction is above FW_LAUN_AC_THLD for FW_LAUN_AC_T seconds.
+Launch is detected when the norm of body acceleration is above FW_LAUN_AC_THLD for FW_LAUN_AC_T seconds.
 
 | Reboot | minValue | maxValue | increment | default | unit  |
 | ------ | -------- | -------- | --------- | ------- | ----- |
