@@ -906,6 +906,7 @@
   - [Translation](contribute/translation.md)
   - [Terminology/Notation](contribute/notation.md)
   - [Licenses](contribute/licenses.md)
+  - [SBOM](contribute/sbom.md)
 - [Releases](releases/index.md)
   - [Release Process](releases/release_process.md)
   - [main (alpha)](releases/main.md)
