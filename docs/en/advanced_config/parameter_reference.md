@@ -23104,6 +23104,26 @@ This increment is added to TRIM_YAW when airspeed is FW_AIRSPD_MIN.
 | ------ | -------- | -------- | --------- | ------- | ---- |
 | &nbsp; | -0.5     | 0.5      | 0.01      | 0.0     |      |
 
+### FW_FLAPS_MAN (`INT32`) {#FW_FLAPS_MAN}
+
+Flap input in manual flight.
+
+Chose source for manual setting of flaps in manual flight modes.
+
+**Values:**
+
+- `0`: Disabled
+- `1`: Aux1
+- `2`: Aux2
+- `3`: Aux3
+- `4`: Aux4
+- `5`: Aux5
+- `6`: Flaps channel
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; |          |          |           | 0       |      |
+
 ### FW_GC_EN (`INT32`) {#FW_GC_EN}
 
 Enable rate gain compression.
@@ -23264,6 +23284,10 @@ Chose source for manual setting of spoilers in manual flight modes.
 - `0`: Disabled
 - `1`: Flaps channel
 - `2`: Aux1
+- `3`: Aux2
+- `4`: Aux3
+- `5`: Aux4
+- `6`: Aux5
 
 | Reboot | minValue | maxValue | increment | default | unit |
 | ------ | -------- | -------- | --------- | ------- | ---- |
