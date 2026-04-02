@@ -21790,6 +21790,32 @@ EKF2 selector maximum accumulated velocity threshold for comparing accelerometer
 | ------ | -------- | -------- | --------- | ------- | ---- |
 | &nbsp; |          |          |           | 2.0     | m/s  |
 
+### EKF2_SENS_EN (`INT32`) {#EKF2_SENS_EN}
+
+Sensor fusion enable bitmask.
+
+Bitmask to control which sensor fusion sources are enabled. Sources whose bit is cleared will be disabled. Only applied while disarmed. For in-flight changes use the MAVLink command VEHICLE_CMD_ESTIMATOR_SENSOR_ENABLE or the individual CTRL params (e.g. EKF2_GPS_CTRL, EKF2_BARO_CTRL).
+
+**Bitmask:**
+
+- `0`: GNSS 0
+- `1`: GNSS 1
+- `2`: Optical flow
+- `3`: External vision
+- `4`: Aux global position 0
+- `5`: Aux global position 1
+- `6`: Aux global position 2
+- `7`: Aux global position 3
+- `8`: Barometer
+- `9`: Range finder
+- `10`: Magnetometer
+- `11`: Airspeed
+- `12`: Ranging beacon
+
+| Reboot | minValue | maxValue | increment | default | unit |
+| ------ | -------- | -------- | --------- | ------- | ---- |
+| &nbsp; | 0        | 8191     |           | 8191    |      |
+
 ### EKF2_SYNT_MAG_Z (`INT32`) {#EKF2_SYNT_MAG_Z}
 
 Enable synthetic magnetometer Z component measurement.
