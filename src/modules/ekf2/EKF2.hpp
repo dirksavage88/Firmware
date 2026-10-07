@@ -430,6 +430,7 @@ private:
 		MAG    = 1 << 10,
 		ASPD   = 1 << 11,
 		RNGBCN = 1 << 12,
+		WHEEL  = 1 << 13,
 	};
 	bool _prev_armed{false};
 
