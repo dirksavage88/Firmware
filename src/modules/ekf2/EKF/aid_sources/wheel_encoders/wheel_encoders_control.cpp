@@ -71,8 +71,14 @@ void Ekf::fuseWheelEncoders(const wheelEncoderSample &sample, const imuSample &i
 	const float v_body_y = 0.0f; // Differential drive assumes no lateral slip
 	const Vector2f meas_vel_body(v_body_x, v_body_y);
 
-	// Prediction: Velocity is now predicted in the body frame by the derivation
-	const Vector3f vel_body_3d = _R_to_earth.transpose() * _state.vel;
+	// Compute rotational component of IMU velocity
+	const Vector3f axle_to_imu = _params.imu_pos_body - _params.axle_pos_body;
+	const Vector3f angular_rate = imu.delta_ang / imu.delta_ang_dt;
+	const Vector3f angular_velocity = angular_rate - _state.gyro_bias;
+	const Vector3f rotational_velocity = angular_velocity % axle_to_imu;
+
+	// Predict velocity at the axle, where the no-lateral-slip constraint applies.
+	const Vector3f vel_body_3d = _R_to_earth.transpose() * _state.vel - rotational_velocity;
 	const Vector2f pred_vel(vel_body_3d(0), vel_body_3d(1));
 
 	const Vector2f innovation = pred_vel - meas_vel_body;
@@ -90,7 +96,7 @@ void Ekf::fuseWheelEncoders(const wheelEncoderSample &sample, const imuSample &i
 	matrix::Vector2f innov_var;
 	VectorState Hx, Hy;
 
-	sym::ComputeWheelVelInnovVarAndH(_state.vector(), P, R, &innov_var, &Hx, &Hy);
+	sym::ComputeWheelVelInnovVarAndH(_state.vector(), P, R, angular_rate, axle_to_imu, &innov_var, &Hx, &Hy);
 
 	updateAidSourceStatus(_aid_src_wheel_encoders,
 			      sample.time_us,
